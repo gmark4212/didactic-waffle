@@ -6,7 +6,6 @@ myvenv
 venv
 migrations
 .idea
-*~
 media
 
 # Compiled source #
