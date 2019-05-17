@@ -21,7 +21,9 @@ class HhParser(BaseParser):
         }
         super().__init__()
 
-    def _fetch_vacancies_portion(self, page_num=1):
+    def fetch_vacancies_portion(self, page_num):
+        print(f'====================== {page_num} ==========================')
+
         params = dict(
             specialization=1,
             per_page=100,
@@ -64,5 +66,5 @@ class GitHubParser(BaseParser):
         super().__init__()
 
 
-h = HhParser()
-h.fetch_last_vacancies()
+# h = HhParser()
+# h.fetch_last_vacancies()
