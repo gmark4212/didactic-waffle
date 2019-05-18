@@ -26,3 +26,18 @@ class DataStorage:
     def __is_valid(self, collection_name):
         return bool(collection_name) and hasattr(self.db, collection_name)
 
+    def fetch_top_skills(self, keyword):
+        col = self.db[DEF_COL]
+        pattern = keyword
+        pipeline = [
+            {"$match": {"name": {"$regex": pattern, "$options": "g"}}},
+            {"$unwind": "$key_skills"},
+            {"$group": {
+                "_id": "$key_skills",
+                "frequency": {"$sum": 1}
+            }},
+            {"$sort": {"frequency": -1}},
+            {"$limit": 10}
+        ]
+        # TODO: encode cyrrilic utf-8
+        return list(col.aggregate(pipeline))
