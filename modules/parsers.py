@@ -3,11 +3,14 @@
 
 import requests
 import re
+from modules.settings import *
+from modules.storage import DataStorage
 
 
 class BaseParser:
     def __init__(self):
         self.TAG_RE = re.compile(r'<[^>]+>')
+        self.db = DataStorage()
 
     def strip_html_tags(self, text):
         return self.TAG_RE.sub('', text)
@@ -39,32 +42,34 @@ class HhParser(BaseParser):
                     response = requests.get(f'{self.api_root}/{vac_id}', headers=self.headers)
                     if response.status_code == 200:
                         vacancy = response.json()
-                        name = vacancy['name']
-                        descr = self.strip_html_tags(vacancy['description'])
-                        pub_date = vacancy['published_at']
-                        url = vacancy['alternate_url']
 
-                        if vacancy['key_skills']:
+                        # process only if it has key skills and id is not in db
+                        if vacancy['key_skills'] and not bool(self.db.get_docs(DEF_COL, {'_id': vac_id}, 1)):
                             key_skills = [x['name'] for x in vacancy['key_skills']]
-                            print(vac_id, key_skills, name, pub_date, url)
+                            document = {
+                                '_id': vac_id,
+                                'name': vacancy['name'],
+                                'description': self.strip_html_tags(vacancy['description']),
+                                'pub_date': vacancy['published_at'],
+                                'url': vacancy['alternate_url'],
+                                'key_skills': key_skills,
+                                'salary': vacancy['salary']
+                            }
+                            self.db.add_doc(DEF_COL, document)
+                            print(document)
             else:
                 return False
-
-    def fetch_last_vacancies(self):
-        for i in range(20):
-            ok = self._fetch_vacancies_portion(i)
-            if ok is False:
-                break
 
 
 class GitHubParser(BaseParser):
     def __init__(self):
         self.api_root = 'https://jobs.github.com/positions.json'
         self.headers = {
-            'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 12_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/69.0.3497.105 Mobile/15E148 Safari/605.1',
+            'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 12_0 like Mac OS X) '
+                          'AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/69.0.3497.105 Mobile/15E148 Safari/605.1',
         }
         super().__init__()
 
 
 # h = HhParser()
-# h.fetch_last_vacancies()
+# h.fetch_vacancies_portion(1)
