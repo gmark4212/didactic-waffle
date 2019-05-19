@@ -69,7 +69,3 @@ class GitHubParser(BaseParser):
                           'AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/69.0.3497.105 Mobile/15E148 Safari/605.1',
         }
         super().__init__()
-
-
-# h = HhParser()
-# h.fetch_vacancies_portion(1)

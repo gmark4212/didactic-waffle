@@ -1,25 +1,37 @@
 from flask import Flask, jsonify, request, abort
-from jinja2 import Template
+from flask import render_template
 from modules.storage import DataStorage
 
-app = Flask(__name__)
+
+class CustomFlask(Flask):
+    jinja_options = Flask.jinja_options.copy()
+    jinja_options.update(dict(
+        block_start_string='(%',
+        block_end_string='%)',
+        variable_start_string='((',
+        variable_end_string='))',
+        comment_start_string='(#',
+        comment_end_string='#)',
+    ))
+
+
+app = CustomFlask(__name__)
 db = DataStorage()
 
 
 @app.route('/')
-def hello_world():
-    return 'Hello World!'
+def index():
+    return render_template('index.html')
 
 
 @app.route('/api/skills/', methods=['GET'])
 def get_top_skills():
     search = request.args.get('search')
-    if bool(search) and len(search) > 3:
+    if bool(search) and len(search) > 2:
         top = db.fetch_top_skills(search)
         return jsonify({'data': top})
     else:
         return abort(400)
-
 
 
 if __name__ == '__main__':
