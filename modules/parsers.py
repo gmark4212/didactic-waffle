@@ -114,7 +114,6 @@ class AuthenticJobsParser(BaseParser):
             method='aj.jobs.search',
             format='json',
         )
-        print(params)
         response = requests.get(url=self.api_root, params=params, headers=self.headers)
         if response.status_code == 200:
             data = response.json()
