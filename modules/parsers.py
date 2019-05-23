@@ -82,17 +82,19 @@ class GitHubParser(BaseParser):
                     vac_id = vacancy['id']
                     if not bool(self.db.get_docs(DEF_COL, {'_id': vac_id}, 1)):
                         # TODO: make skills extracting from description
-                        key_skills = []
-                        document = {
-                            '_id': vac_id,
-                            'name': vacancy['title'],
-                            'description': self.extractor.strip_html_tags(vacancy['description']),
-                            'pub_date': vacancy['created_at'],
-                            'url': vacancy['url'],
-                            'key_skills': key_skills,
-                        }
-                        self.db.add_doc(DEF_COL, document)
-                        print(document)
+                        desc = self.extractor.strip_html_tags(vacancy['description'])
+                        key_skills = self.extractor.extract_skills(desc)
+                        if key_skills:
+                            document = {
+                                '_id': vac_id,
+                                'name': vacancy['title'],
+                                'description': desc,
+                                'pub_date': vacancy['created_at'],
+                                'url': vacancy['url'],
+                                'key_skills': key_skills,
+                            }
+                            self.db.add_doc(DEF_COL, document)
+                            print(document)
         else:
             return False
 
@@ -122,17 +124,19 @@ class AuthenticJobsParser(BaseParser):
                 for vacancy in data:
                     vac_id = self.prefix + vacancy['id']
                     if not bool(self.db.get_docs(DEF_COL, {'_id': vac_id}, 1)):
-                        key_skills = []
-                        document = {
-                            '_id': vac_id,
-                            'name': vacancy['title'],
-                            'description': self.extractor.strip_html_tags(vacancy['description']),
-                            'pub_date': vacancy['post_date'],
-                            'url': vacancy['url'],
-                            'key_skills': key_skills,
-                        }
-                        self.db.add_doc(DEF_COL, document)
-                        print(document)
+                        desc = self.extractor.strip_html_tags(vacancy['description'])
+                        key_skills = self.extractor.extract_skills(desc)
+                        if key_skills:
+                            document = {
+                                '_id': vac_id,
+                                'name': vacancy['title'],
+                                'description': desc,
+                                'pub_date': vacancy['post_date'],
+                                'url': vacancy['url'],
+                                'key_skills': key_skills,
+                            }
+                            self.db.add_doc(DEF_COL, document)
+                            print(document)
         else:
             return False
 
