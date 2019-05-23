@@ -36,6 +36,6 @@ class DataStorage:
                 "frequency": {"$sum": 1}
             }},
             {"$sort": {"frequency": -1}},
-            {"$limit": 10}
+            {"$limit": SKILLS_LIMIT}
         ]
         return list(col.aggregate(pipeline))
