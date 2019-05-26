@@ -4,6 +4,9 @@ import re
 
 
 class SkillsExtractor:
+    def __int__(self):
+        pass
+
     def __init__(self):
         self.TAG_RE = re.compile(r'<[^>]+>')
 

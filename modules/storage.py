@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 from pymongo import MongoClient
+from modules.textlib import check_synonyms
 from modules.settings import *
 
 
@@ -26,8 +27,23 @@ class DataStorage:
     def __is_valid(self, collection_name):
         return bool(collection_name) and hasattr(self.db, collection_name)
 
-    def fetch_top_skills(self, pattern):
+    def fetch_top_skills(self, search_str):
+        keywords = search_str.split()
+
+        extra_keywords = []
+        for i in keywords:
+            synonyms = check_synonyms(i)
+            if synonyms:
+                extra_keywords.extend(synonyms)
+
+        if extra_keywords:
+            keywords.extend(extra_keywords)
+
+        s = ''.join(f'{x}|' for x in keywords)
+        s = s[:len(s) - 1]
+        pattern = f'({s}).*?({s})'
         col = self.db[DEF_COL]
+
         pipeline = [
             {"$match": {"name": {"$regex": pattern, "$options": "gi"}}},
             {"$unwind": "$key_skills"},
@@ -38,4 +54,5 @@ class DataStorage:
             {"$sort": {"frequency": -1}},
             {"$limit": SKILLS_LIMIT}
         ]
+
         return list(col.aggregate(pipeline))

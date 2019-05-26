@@ -155,10 +155,11 @@ class ParserFabric:
     def spawn(self, name):
         return self.parsers[name]()
 
-# ----- FOR TEST USE ONLY! -----
-# if __name__ == '__main__':
-#     f = ParserFabric()
-#     print(f.spawn('authenticjobs').fetch_vacancies_portion(1))
+
+# # ----- FOR TEST USE ONLY! -----
+if __name__ == '__main__':
+    f = ParserFabric()
+#     # print(f.spawn('authenticjobs').fetch_vacancies_portion(1))
 #     # print(f.spawn('hh').fetch_vacancies_portion(2))
-#     # print(f.spawn('github').fetch_vacancies_portion(2))
-# ----- FOR TEST USE ONLY! -----
+    print(f.spawn('github').fetch_vacancies_portion(2))
+# # ----- FOR TEST USE ONLY! -----
