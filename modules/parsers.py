@@ -4,13 +4,13 @@ import requests
 from abc import ABC, abstractmethod
 from modules.settings import *
 from modules.storage import DataStorage
-from modules.extractor import SkillsExtractor
+from modules.extractor import ExtractorFacade
 
 
 class BaseParser(ABC):
     def __init__(self):
-        self.db = DataStorage()
-        self.extractor = SkillsExtractor()
+        self.extractor = ExtractorFacade()
+        self.db = DataStorage(ef=self.extractor)
         self.headers = {
             'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 12_0 like Mac OS X) ',
         }
@@ -48,6 +48,8 @@ class HhParser(BaseParser):
                         vacancy = response.json()
                         if vacancy['key_skills'] and not bool(self.db.get_docs(DEF_COL, {'_id': vac_id}, 1)):
                             key_skills = [x['name'] for x in vacancy['key_skills']]
+                            self.db.add_skill_to_ref(key_skills)
+
                             document = {
                                 '_id': vac_id,
                                 'name': vacancy['name'],
@@ -157,9 +159,9 @@ class ParserFabric:
 
 
 # # ----- FOR TEST USE ONLY! -----
-if __name__ == '__main__':
-    f = ParserFabric()
+# if __name__ == '__main__':
+#     f = ParserFabric()
+#     print(f.spawn('hh').fetch_vacancies_portion(4))
 #     # print(f.spawn('authenticjobs').fetch_vacancies_portion(1))
-#     # print(f.spawn('hh').fetch_vacancies_portion(2))
-    print(f.spawn('github').fetch_vacancies_portion(2))
+#     print(f.spawn('github').fetch_vacancies_portion(2))
 # # ----- FOR TEST USE ONLY! -----
