@@ -1,17 +1,12 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+from builtins import print
 from pymongo import MongoClient
 from modules.settings import *
-from modules.extractor import ExtractorFacade
 
 
 class DataStorage:
-    def __init__(self, ef=None):
-        if ef:
-            self.ef = ef
-        else:
-            self.ef = ExtractorFacade()
-
+    def __init__(self):
         try:
             self.client = MongoClient(f'{DEFAULT_HOST}:{MONGODB_PORT}')
             self.db = self.client[MONGO_DB_NAME]
@@ -37,23 +32,21 @@ class DataStorage:
             x = list()
             x.append(skills)
             skills = x
+        else:
+            skills = list(set(skills))
 
         for skill in skills:
             exist_in_ref = self.get_docs(SKILLS_REF, {'name': skill}, 1)
             if not exist_in_ref:
                 self.add_doc(SKILLS_REF, {'name': skill})
 
+    def get_key_skills_ref(self):
+        ref = self.get_docs(SKILLS_REF)
+        ref = [x['name'] for x in ref]
+        return set(ref)
+
     def fetch_top_skills(self, search_str):
         keywords = search_str.split()
-        extra_keywords = []
-        for i in keywords:
-            synonyms = self.ef.check_synonyms(i)
-            if synonyms:
-                extra_keywords.extend(synonyms)
-
-        if extra_keywords:
-            keywords.extend(extra_keywords)
-
         keywords = set(keywords)
         if len(keywords) > 1:
             s = ''.join(f'{x}|' for x in keywords)
@@ -74,5 +67,4 @@ class DataStorage:
         ]
 
         col = self.db[DEF_COL]
-
         return list(col.aggregate(pipeline))
