@@ -6,6 +6,7 @@ myvenv
 venv
 migrations
 .idea
+npm
 media
 
 # Compiled source #

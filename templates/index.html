@@ -29,16 +29,41 @@
 
     <div class="container">
         <br><br>
-        <div v-if="skills.data">
-            <div v-for="sk in skills.data">
-                <p class="title">{{ sk._id }}</p>
+        <div v-if="fetching"><progress class="progress is-small is-primary" max="100"></progress></div>
+        <div v-else-if="skills.data">
+            <div v-for="(value,index) in skills.data">
+                <span class="tag is-white">{{ ++index }}.</span>
+                <span v-if="index < 5" class="tag is-primary">{{ value._id }}</span>
+                <span v-if="index >= 5 && index < 10" class="tag is-info">{{ value._id }}</span>
+                <span v-if="index >= 10" class="tag is-light">{{ value._id }}</span>
+                &nbsp;<a href="#" v-on:click.stop.prevent="value.visible = !value.visible">{{ value.frequency }}
+                jobs</a>
+
+                <div v-show="value.visible" style="margin-left: 2em;">
+                    <ul>
+                        <li v-for="vac in value.vacs">
+                            <a :href="`${vac.url}`" target="_blank" class="is-size-7">{{ vac.name }}</a>
+                        </li>
+                    </ul>
+                </div>
+
             </div>
         </div>
         <div v-else>
-            <data-error class="title">Try to enter something...</data-error>
+            <progress class="progress is-small is-primary" max="100"></progress>
         </div>
+        <br><br>
     </div>
+
 </div>
+
+<footer class="footer">
+    <div class="content has-text-centered is-primary">
+        <p>
+            <strong>Skill cloud</strong> by <a href="https://github.com/gmark4212"><i class="fab fa-github"></i>&nbsp;Mark G</a>
+        </p>
+    </div>
+</footer>
 
 <script src="/static/js/main.js"></script>
 </body>
