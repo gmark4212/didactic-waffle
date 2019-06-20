@@ -35,7 +35,7 @@ class DataStorage:
         if self.__is_valid(collection_name) and isinstance(data, dict):
             if '_id' in data and data['_id'] not in self.docs_map.keys():
                 self.docs_map[data['_id']] = data
-                print('!!!!!!!!!', self.docs_map)
+                print('+', self.docs_map)
             self.db[collection_name].insert_one(data)
 
     def __is_valid(self, collection_name):
@@ -56,8 +56,7 @@ class DataStorage:
 
     def get_key_skills_ref(self):
         ref = self.get_docs(SKILLS_REF)
-        ref = [x['name'] for x in ref]
-        return set(ref)
+        return tuple(x['name'] for x in ref)
 
     def get_paid_vacancies(self):
         return self.get_docs(DEF_COL, _filter={'salary.from': {'$gt': 0}}, limit=100, _sort_field='salary.from')
