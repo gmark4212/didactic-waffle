@@ -20,11 +20,19 @@ class Extractor:
     def strip_html_tags(self, text):
         return self.__class__.TAG_RE.sub('', text)
 
+    @staticmethod
+    def has_cyrillic(text):
+        return bool(re.search('[а-яА-Я]', text))
+
+    def purge_cyrrilic_skills(self, skill_list):
+        return [x for x in skill_list if not self.has_cyrillic(x)]
+
     def extract_skills(self, text):
         key_skills = set()
         if self.ref:
             for skill in self.ref:
                 if len(skill) > 2:
                     if re.search(r"\b" + re.escape(skill) + r"\b", text, re.MULTILINE | re.IGNORECASE | re.VERBOSE):
-                        key_skills.add(skill)
+                        if not self.has_cyrillic(skill):
+                            key_skills.add(skill)
         return list(key_skills)

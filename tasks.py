@@ -30,6 +30,5 @@ def setup_periodic_tasks(sender, **kwargs):
 
 @app.task
 def parse_data(portion):
-    ids = Fabric.parsers_ids()
-    for parser_id in ids:
+    for parser_id in Fabric.parsers_ids:
         Fabric.spawn(parser_id).fetch_vacancies_portion(portion)
