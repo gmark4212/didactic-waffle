@@ -50,9 +50,10 @@ class DataStorage:
             skills = list(set(skills))
 
         for skill in skills:
-            exist_in_ref = self.get_docs(SKILLS_REF, {'name': skill}, 1)
+            lower_cased_skill = skill.lower()
+            exist_in_ref = self.get_docs(SKILLS_REF, {'low': lower_cased_skill}, 1)
             if not exist_in_ref:
-                self.add_doc(SKILLS_REF, {'name': skill})
+                self.add_doc(SKILLS_REF, {'name': skill, 'low': lower_cased_skill})
 
     def get_key_skills_ref(self):
         ref = self.get_docs(SKILLS_REF)

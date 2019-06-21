@@ -31,8 +31,8 @@ class Extractor:
         key_skills = set()
         if self.ref:
             for skill in self.ref:
-                if len(skill) > 2:
-                    if re.search(r"\b" + re.escape(skill) + r"\b", text, re.MULTILINE | re.IGNORECASE | re.VERBOSE):
+                if len(skill) > 1:
+                    if re.search(r"\b" + re.escape(skill) + r"\b", text, re.MULTILINE | re.IGNORECASE):
                         if not self.has_cyrillic(skill):
                             key_skills.add(skill)
         return list(key_skills)

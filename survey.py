@@ -66,6 +66,5 @@ def main():
         db.add_skill_to_ref(result)
 
 
-
 if __name__ == '__main__':
     main()
