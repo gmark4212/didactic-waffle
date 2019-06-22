@@ -151,12 +151,54 @@ class AuthenticJobsParser(BaseParser):
             return False
 
 
+class TheMuseParser(BaseParser):
+    id = 'themuse'
+
+    def __init__(self):
+        self.api_root = 'https://www.themuse.com/api/public/jobs'
+        self.__api_key = 'c86b7455e1c238124478b5cf8194435371cb55ef3523da42d0396005b2f97af7'
+        self.prefix = 'ms'
+        super().__init__()
+
+    def fetch_vacancies_portion(self, page_num):
+        params = dict(
+            page=page_num,
+        )
+        response = requests.get(
+            url=f'{self.api_root}?category=Data%20Science&category=Engineering',
+            params=params,
+            headers=self.headers
+        )
+        if response.status_code == 200:
+            ids = tuple([x['id'] for x in response.json()['results']])
+            if ids:
+                for vac_id in ids:
+                    response = requests.get(f'{self.api_root}/{vac_id}', headers=self.headers)
+                    if response.status_code == 200:
+                        vacancy = response.json()
+                        _id = self.prefix + str(vac_id)
+                        if not bool(self.db.get_docs(DEF_COL, {'_id': _id}, 1)):
+                            desc = self.extractor.strip_html_tags(vacancy['contents'])
+                            key_skills = self.extractor.extract_skills(desc)
+                            if key_skills:
+                                document = {
+                                    '_id': _id,
+                                    'name': vacancy['name'],
+                                    'description': desc,
+                                    'pub_date': vacancy['publication_date'],
+                                    'url': vacancy['refs']['landing_page'],
+                                    'key_skills': key_skills,
+                                }
+                                self.db.add_doc(DEF_COL, document)
+
+
 class ParserFabric:
     def __init__(self):
         self.parsers = {
             HhParser.id: HhParser,
             GitHubParser.id: GitHubParser,
             AuthenticJobsParser.id: AuthenticJobsParser,
+            TheMuseParser.id: TheMuseParser,
         }
 
     @property
@@ -168,9 +210,10 @@ class ParserFabric:
 
 
 # # ----- FOR TEST USE ONLY! -----
-# if __name__ == '__main__':
-#     f = ParserFabric()
-#     print(f.spawn('hh').fetch_vacancies_portion(5))
-#     print(f.spawn('authenticjobs').fetch_vacancies_portion(2))
-#     print(f.spawn('github').fetch_vacancies_portion(5))
+if __name__ == '__main__':
+    f = ParserFabric()
+    # print(f.spawn('hh').fetch_vacancies_portion(5))
+    # print(f.spawn('authenticjobs').fetch_vacancies_portion(2))
+    # print(f.spawn('github').fetch_vacancies_portion(5))
+    print(f.spawn('themuse').fetch_vacancies_portion(1))
 # # ----- FOR TEST USE ONLY! -----

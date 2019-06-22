@@ -22,7 +22,7 @@ def setup_periodic_tasks(sender, **kwargs):
     # Executes everyday
     for portion in range(20):
         sender.add_periodic_task(
-            crontab(hour=18, minute=50),
+            crontab(hour=2, minute=10),
             parse_data.s(portion),
             name=f'daily parsing: {portion}',
         )
