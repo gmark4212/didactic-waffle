@@ -60,9 +60,6 @@ def main():
 
         result = list(set(result))
         print(result)
-        print(len(result))
-
-        result.append('InfluxDB')
         db.add_skill_to_ref(result)
 
 

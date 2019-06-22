@@ -52,10 +52,11 @@ class HhParser(BaseParser):
 
                         if (extracted_skills or vacancy['key_skills']) and not bool(self.db.get_docs(DEF_COL, {'_id': vac_id}, 1)):
                             key_skills = [x['name'] for x in vacancy['key_skills']]
-                            key_skills.extend(extracted_skills)
                             key_skills = self.extractor.purge_cyrrilic_skills(key_skills)
 
-                            self.db.add_skill_to_ref(key_skills)
+                            # self.db.add_skill_to_ref(key_skills)
+
+                            key_skills.extend(extracted_skills)
 
                             document = {
                                 '_id': vac_id,
@@ -167,9 +168,9 @@ class ParserFabric:
 
 
 # # ----- FOR TEST USE ONLY! -----
-if __name__ == '__main__':
-    f = ParserFabric()
-    # print(f.spawn('hh').fetch_vacancies_portion(5))
-    # print(f.spawn('authenticjobs').fetch_vacancies_portion(2))
-    print(f.spawn('github').fetch_vacancies_portion(5))
+# if __name__ == '__main__':
+#     f = ParserFabric()
+#     print(f.spawn('hh').fetch_vacancies_portion(5))
+#     print(f.spawn('authenticjobs').fetch_vacancies_portion(2))
+#     print(f.spawn('github').fetch_vacancies_portion(5))
 # # ----- FOR TEST USE ONLY! -----
