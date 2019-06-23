@@ -26,13 +26,13 @@ before_script:
 
 test:
   script:
-    - python -m unittest discover tests
+    - pytest -v --ff --tb=no
 
 deploy_production:
   stage: deploy
   environment:
     name: production
   script:
-    - ssh ubuntu@ec2-18-222-28-147.us-east-2.compute.amazonaws.com "cd /home/ubuntu/cloud/skills-cloud && git pull origin master && exit"
+    - ssh ubuntu@ec2-18-222-28-147.us-east-2.compute.amazonaws.com "cd /home/ubuntu/cloud/skills-cloud && pwd && git pull origin master && exit"
   only:
     - master
