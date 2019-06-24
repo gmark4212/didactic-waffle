@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+import re
 from builtins import print
 from pymongo import MongoClient
 from collections.abc import Iterable, Iterator
@@ -64,14 +65,16 @@ class DataStorage:
 
     @staticmethod
     def __create_search_pattern(search_str):
+        # todo: search whole words
         keywords = search_str.split()
         keywords = set(keywords)
         if len(keywords) > 1:
-            s = ''.join(f'{x}|' for x in keywords)
+            s = ''.join(r'\b' + re.escape(x) + r'\b|' for x in keywords)
             s = s[:len(s) - 1]
             pattern = f'({s}).*?({s})'
         else:
             pattern = list(keywords)[0]
+            pattern = r'\b' + re.escape(pattern) + r'\b'
         return pattern
 
     def fetch_top_skills(self, search_str):

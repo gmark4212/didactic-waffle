@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, abort
+from flask import Flask, jsonify, request, abort, escape
 from flask import render_template
 from modules.storage import DataStorage
 
@@ -26,7 +26,7 @@ def index():
 
 @app.route('/api/skills/', methods=['GET'])
 def get_top_skills():
-    search = request.args.get('search')
+    search = escape(request.args.get('search'))
     if bool(search) and len(search) > 2:
         top = db.fetch_top_skills(search)
         return jsonify({'data': top})
