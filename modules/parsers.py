@@ -14,6 +14,7 @@ class BaseParser(ABC):
 
     def __init__(self):
         self.api_root = None
+        self.fields = None
         self.db = DataStorage()
         self.extractor = Extractor(db=self.db)
         self.headers = {
@@ -28,14 +29,14 @@ class BaseParser(ABC):
     def get_field_from_nested_dict(data_dict, map_tuple):
         return reduce(operator.getitem, map_tuple, data_dict)
 
-    def get_ids(self, params, ids_root):
+    def get_ids(self, params, ids_root, str_get_params=''):
         ids = ()
-        response = requests.get(url=self.api_root, params=params, headers=self.headers)
+        response = requests.get(url=self.api_root + str_get_params, params=params, headers=self.headers)
         if response.status_code == 200:
             ids = tuple(x['id'] for x in response.json()[ids_root])
         return ids
 
-    def get_vacs_by_ids(self, ids):
+    def get_vacs_by_ids(self, ids=None):
         vacs = []
         if ids:
             for vac_id in ids:
@@ -45,10 +46,21 @@ class BaseParser(ABC):
                     vacs.append(vacancy)
         return tuple(vacs)
 
-    def process_vacancies(self, fields, vacs):
+    def get_vacs_by_root(self, params, data_map=None):
+        vacs = []
+        response = requests.get(self.api_root, params=params, headers=self.headers)
+        data = response.json()
+        if isinstance(data_map, tuple):
+            data = self.get_field_from_nested_dict(data, data_map)
+        if data:
+            for vacancy in data:
+                vacs.append(vacancy)
+        return tuple(vacs)
+
+    def process_vacancies(self, vacs):
         if vacs:
+            fields = self.fields
             for vacancy in vacs:
-                # _id = self.prefix + str(vacancy[fields['id']])
                 _id = self.__class__.id + str(vacancy[fields['id']])
 
                 if not bool(self.db.get_docs(DEF_COL, {'_id': _id}, 1)):
@@ -60,6 +72,7 @@ class BaseParser(ABC):
                         key_skills = self.extractor.purge_cyrrilic_skills(key_skills)
                         if key_skills:
                             extracted_skills.extend(key_skills)
+                            extracted_skills = list(set(extracted_skills))
 
                     if extracted_skills:
                         url_map = fields['url']
@@ -89,14 +102,7 @@ class HhParser(BaseParser):
         self.headers = {
             'User-Agent': 'api-test-agent',
         }
-
-    def fetch_vacancies_portion(self, page_num):
-        params = {
-            'specialization': 1,
-            'per_page': 100,
-            'page': page_num,
-        }
-        fields = {
+        self.fields = {
             'id': 'id',
             'desc': 'description',
             'name': 'name',
@@ -104,128 +110,88 @@ class HhParser(BaseParser):
             'url': 'url',
             'skills': 'key_skills',
         }
+
+    def fetch_vacancies_portion(self, page_num):
+        params = {
+            'specialization': 1,
+            'per_page': 100,
+            'page': page_num,
+        }
         ids = self.get_ids(params, ids_root='items')
         vacs = self.get_vacs_by_ids(ids)
-        self.process_vacancies(fields, vacs)
+        self.process_vacancies(vacs)
 
 
 class GitHubParser(BaseParser):
     id = 'gh'
 
     def __init__(self):
-        self.api_root = 'https://jobs.github.com/positions.json'
         super().__init__()
+        self.api_root = 'https://jobs.github.com/positions.json'
+        self.fields = {
+            'id': 'id',
+            'desc': 'description',
+            'name': 'title',
+            'pub_date': 'created_at',
+            'url': 'url',
+        }
 
     def fetch_vacancies_portion(self, page_num):
-        params = dict(
-            page=page_num,
-        )
-        response = requests.get(url=self.api_root, params=params, headers=self.headers)
-        if response.status_code == 200:
-            data = response.json()
-            if data:
-                for vacancy in data:
-                    vac_id = vacancy['id']
-                    if not bool(self.db.get_docs(DEF_COL, {'_id': vac_id}, 1)):
-                        # TODO: make skills extracting from description
-                        desc = self.extractor.strip_html_tags(vacancy['description'])
-                        key_skills = self.extractor.extract_skills(desc)
-                        if key_skills:
-                            document = {
-                                '_id': vac_id,
-                                'name': vacancy['title'],
-                                'description': desc,
-                                'pub_date': vacancy['created_at'],
-                                'url': vacancy['url'],
-                                'key_skills': key_skills,
-                            }
-                            self.db.add_doc(DEF_COL, document)
-                            print(document)
-        else:
-            return False
+        params = {
+            'page': page_num,
+        }
+        vacs = self.get_vacs_by_root(params)
+        self.process_vacancies(vacs)
 
 
 class AuthenticJobsParser(BaseParser):
-    id = 'authenticjobs'
+    id = 'aj'
 
     def __init__(self):
-        self.api_root = 'https://authenticjobs.com/api/'
-        self.__api_key = '992cbc1f22ef453412177e0aa22ed7f2'
-        self.prefix = 'aj'
         super().__init__()
+        self.api_root = 'https://authenticjobs.com/api/'
+        self.fields = {
+            'id': 'id',
+            'desc': 'description',
+            'name': 'title',
+            'pub_date': 'post_date',
+            'url': 'url',
+        }
 
     def fetch_vacancies_portion(self, page_num):
-        params = dict(
-            api_key=self.__api_key,
-            page=page_num,
-            perpage=100,
-            method='aj.jobs.search',
-            format='json',
-        )
-        response = requests.get(url=self.api_root, params=params, headers=self.headers)
-        if response.status_code == 200:
-            data = response.json()
-            if data:
-                data = data['listings']['listing']
-                for vacancy in data:
-                    vac_id = self.prefix + vacancy['id']
-                    if not bool(self.db.get_docs(DEF_COL, {'_id': vac_id}, 1)):
-                        desc = self.extractor.strip_html_tags(vacancy['description'])
-                        key_skills = self.extractor.extract_skills(desc)
-                        if key_skills:
-                            document = {
-                                '_id': vac_id,
-                                'name': vacancy['title'],
-                                'description': desc,
-                                'pub_date': vacancy['post_date'],
-                                'url': vacancy['url'],
-                                'key_skills': key_skills,
-                            }
-                            self.db.add_doc(DEF_COL, document)
-                            print(document)
-        else:
-            return False
+        params = {
+            'api_key': '992cbc1f22ef453412177e0aa22ed7f2',
+            'page': page_num,
+            'perpage': 100,
+            'method': 'aj.jobs.search',
+            'format': 'json',
+        }
+        vacs = self.get_vacs_by_root(params, data_map=('listings', 'listing'))
+        self.process_vacancies(vacs)
 
 
 class TheMuseParser(BaseParser):
-    id = 'themuse'
+    id = 'ms'
 
     def __init__(self):
-        self.api_root = 'https://www.themuse.com/api/public/jobs'
-        self.__api_key = 'c86b7455e1c238124478b5cf8194435371cb55ef3523da42d0396005b2f97af7'
-        self.prefix = 'ms'
         super().__init__()
+        self.api_root = 'https://www.themuse.com/api/public/jobs'
+        self.fields = {
+            'id': 'id',
+            'desc': 'contents',
+            'name': 'name',
+            'pub_date': 'publication_date',
+            'url': ('refs', 'landing_page'),
+        }
 
     def fetch_vacancies_portion(self, page_num):
-        params = dict(
-            page=page_num,
-        )
-        response = requests.get(
-            url=f'{self.api_root}?category=Data%20Science&category=Engineering',
-            params=params,
-            headers=self.headers
-        )
-        if response.status_code == 200:
-            ids = tuple(x['id'] for x in response.json()['results'])
-            if ids:
-                for vac_id in ids:
-                    response = requests.get(f'{self.api_root}/{vac_id}', headers=self.headers)
-                    if response.status_code == 200:
-                        vacancy = response.json()
-                        _id = self.prefix + str(vac_id)
-                        if not bool(self.db.get_docs(DEF_COL, {'_id': _id}, 1)):
-                            desc = self.extractor.strip_html_tags(vacancy['contents'])
-                            key_skills = self.extractor.extract_skills(desc)
-                            if key_skills:
-                                document = {
-                                    '_id': _id,
-                                    'name': vacancy['name'],
-                                    'description': desc,
-                                    'pub_date': vacancy['publication_date'],
-                                    'url': vacancy['refs']['landing_page'],
-                                    'key_skills': key_skills,
-                                }
-                                self.db.add_doc(DEF_COL, document)
+        params = {
+            'page': page_num,
+            'api-key': 'c86b7455e1c238124478b5cf8194435371cb55ef3523da42d0396005b2f97af7',
+        }
+        ids = self.get_ids(params, ids_root='results', str_get_params='?category=Data%20Science&category=Engineering')
+        vacs = self.get_vacs_by_ids(ids)
+        self.process_vacancies(vacs)
 
 
 class ParserFabric:
@@ -246,10 +212,10 @@ class ParserFabric:
 
 
 # # ----- FOR TEST USE ONLY! -----
-if __name__ == '__main__':
-    f = ParserFabric()
-    print(f.spawn('hh').fetch_vacancies_portion(2))
-    # print(f.spawn('authenticjobs').fetch_vacancies_portion(2))
-    # print(f.spawn('github').fetch_vacancies_portion(5))
-    # print(f.spawn('themuse').fetch_vacancies_portion(3))
+# if __name__ == '__main__':
+#     f = ParserFabric()
+    # print(f.spawn('hh').fetch_vacancies_portion(2))
+    # print(f.spawn('aj').fetch_vacancies_portion(1))
+    # print(f.spawn('gh').fetch_vacancies_portion(1))
+    # print(f.spawn('ms').fetch_vacancies_portion(4))
 # # ----- FOR TEST USE ONLY! -----
