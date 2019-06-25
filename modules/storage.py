@@ -65,7 +65,6 @@ class DataStorage:
 
     @staticmethod
     def __create_search_pattern(search_str):
-        # todo: search whole words
         keywords = search_str.split()
         keywords = set(keywords)
         if len(keywords) > 1:
