@@ -31,6 +31,6 @@ deploy_production:
   environment:
     name: production
   script:
-    - ssh ubuntu@ec2-18-222-28-147.us-east-2.compute.amazonaws.com "cd /home/ubuntu/cloud/skills-cloud && pwd && git pull origin master && ps aux |grep gunicorn |grep webapp | awk '{ print $2; exit }' | xargs kill -HUP && exit"
+    - ssh ubuntu@ec2-18-222-28-147.us-east-2.compute.amazonaws.com "cd /home/ubuntu/cloud/skills-cloud && pwd && git pull origin master && bash /home/ubuntu/cloud/gun_reload.sh && exit"
   only:
     - master
