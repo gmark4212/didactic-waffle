@@ -107,7 +107,8 @@ class HhParser(BaseParser):
             'desc': 'description',
             'name': 'name',
             'pub_date': 'published_at',
-            'url': 'url',
+            # 'url': 'url',
+            'url': 'alternate_url',
             'skills': 'key_skills',
         }
 
@@ -214,8 +215,8 @@ class ParserFabric:
 # # ----- FOR TEST USE ONLY! -----
 # if __name__ == '__main__':
 #     f = ParserFabric()
-    # print(f.spawn('hh').fetch_vacancies_portion(2))
+    # print(f.spawn('hh').fetch_vacancies_portion(1))
     # print(f.spawn('aj').fetch_vacancies_portion(1))
-    # print(f.spawn('gh').fetch_vacancies_portion(1))
+    # print(f.spawn('gh').fetch_vacancies_portion(2))
     # print(f.spawn('ms').fetch_vacancies_portion(4))
 # # ----- FOR TEST USE ONLY! -----
