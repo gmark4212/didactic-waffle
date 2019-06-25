@@ -9,15 +9,13 @@ cache:
     - venv/
 
 before_script:
-  - python -V  # Print out python version for debugging
+  - python -V
   - pip install virtualenv
   - virtualenv venv
   - source venv/bin/activate
   - pip install -r requirements.txt
-  #  Deploy preparations
   - apt-get update -qq
   - apt-get install -qq git
-  # Setup SSH deploy keys
   - 'which ssh-agent || ( apt-get install -qq openssh-client )'
   - eval $(ssh-agent -s)
   - ssh-add <(echo "$SSH_PRIVATE_KEY")
@@ -33,6 +31,6 @@ deploy_production:
   environment:
     name: production
   script:
-    - ssh ubuntu@ec2-18-222-28-147.us-east-2.compute.amazonaws.com "cd /home/ubuntu/cloud/skills-cloud && pwd && git pull origin master && exit"
+    - ssh ubuntu@ec2-18-222-28-147.us-east-2.compute.amazonaws.com "cd /home/ubuntu/cloud/skills-cloud && pwd && git pull origin master && ps aux |grep gunicorn |grep webapp | awk '{ print $2 }' |xargs kill -HUP && exit"
   only:
     - master
