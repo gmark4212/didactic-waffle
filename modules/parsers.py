@@ -79,7 +79,7 @@ class BaseParser(ABC):
                         if isinstance(url_map, tuple):
                             vacancy_url = self.get_field_from_nested_dict(vacancy, url_map)
                         else:
-                            vacancy_url = url_map
+                            vacancy_url = vacancy[url_map]
 
                         document = {
                             '_id': _id,

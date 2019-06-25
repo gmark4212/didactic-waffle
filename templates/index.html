@@ -39,7 +39,7 @@
                 &nbsp;<a href="#" v-on:click.stop.prevent="value.visible = !value.visible">{{ value.frequency }}
                 jobs</a>
 
-                <div v-show="value.visible" style="margin-left: 2em;">
+                <div v-show="value.visible" style="margin-left: 3em;">
                     <ul>
                         <li v-for="vac in value.vacs">
                             <a :href="`${vac.url}`" target="_blank" class="is-size-7">{{ vac.name }}</a>
