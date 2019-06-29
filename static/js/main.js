@@ -1,7 +1,7 @@
 const app = new Vue({
         el: '#app',
         data: {
-            api: '/api/skills/?search=',
+            api: '/api/v1/skills/?search=',
             searchLine: 'data scientist',
             skills: [],
             fetching: false

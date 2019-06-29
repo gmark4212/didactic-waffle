@@ -87,26 +87,37 @@ class DataStorage:
             {"$sort": {"frequency": -1}},
             {"$limit": SKILLS_LIMIT}
         ]
-        col = self.db[DEF_COL]
-        top = list(col.aggregate(pipeline))
+        coll = self.db[DEF_COL]
+        top = list(coll.aggregate(pipeline))
         for i in top:
             i['vacs'] = self.get_vacancies_by_skill(i['_id'], search_str)
             i['visible'] = False
         return top
 
-    def get_vacancies_by_skill(self, skill, search_str):
-        pipeline = [
-            {"$match": {"name": {"$regex": self.__create_search_pattern(search_str), "$options": "gi"}}},
+    def get_vacancies_by_skill(self, skill, search_str=''):
+        pipeline = []
+
+        if search_str:
+            pipeline.append(
+                {"$match": {"name": {"$regex": self.__create_search_pattern(search_str), "$options": "gi"}}}
+            )
+
+        pipeline.extend([
             {"$unwind": "$key_skills"},
-            {"$match": {"key_skills": skill}},
+            {"$match": {"key_skills": {"$regex": skill, "$options": "gi"}}},
             {"$sort": {"pub_date": -1}}
-        ]
-        col = self.db[DEF_COL]
-        vacs = list(col.aggregate(pipeline))
+        ])
+
+        coll = self.db[DEF_COL]
+        vacs = list(coll.aggregate(pipeline))
+        print(vacs)
         return [{'name': x['name'], 'url': x['url']} for x in vacs]
 
+    def get_skills_ref(self):
+        skills = list(self.get_docs(SKILLS_REF))
+        return [{'name': x['name'], '_id': str(x['_id'])} for x in skills]
 
-#  ++++++++++++++++ Iterator pattern example ++++++++++++++++
+
 class SalaryVacancyIterator(Iterator):
     _position: int = None
     _reverse: bool = False
@@ -138,5 +149,3 @@ class VacanciesCollection(Iterable):
 
     def add_item(self, item: Any):
         self._collection.append(item)
-
-#  ++++++++++++++++ Iterator pattern example ++++++++++++++++

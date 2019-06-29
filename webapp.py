@@ -24,7 +24,7 @@ def index():
     return render_template('index.html')
 
 
-@app.route('/api/skills/', methods=['GET'])
+@app.route('/api/v1/skills/', methods=['GET'])
 def get_top_skills():
     search = escape(request.args.get('search'))
     if bool(search) and len(search) > 2:
@@ -32,6 +32,18 @@ def get_top_skills():
         return jsonify({'data': top})
     else:
         return abort(400)
+
+
+@app.route('/api/v1/ref/skills/', methods=['GET'])
+def get_skills_ref():
+    return jsonify({'data': db.get_skills_ref()})
+
+
+@app.route("/api/v1/vacancies/<string:skill>", methods=['GET'])
+def fetch_vacs_for_skill(skill):
+    skill = escape(skill)
+    if request.method == 'GET':
+        return jsonify({'data': db.get_vacancies_by_skill(skill)})
 
 
 if __name__ == '__main__':
