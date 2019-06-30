@@ -107,7 +107,6 @@ class HhParser(BaseParser):
             'desc': 'description',
             'name': 'name',
             'pub_date': 'published_at',
-            # 'url': 'url',
             'url': 'alternate_url',
             'skills': 'key_skills',
         }

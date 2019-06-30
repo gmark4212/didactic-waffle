@@ -1,10 +1,13 @@
-const app = new Vue({
-        el: '#app',
+const grades = new Vue({
+        el: '#grades',
         data: {
             api: '/api/v1/skills/?search=',
             searchLine: 'data scientist',
             skills: [],
-            fetching: false
+            fetching: false,
+            api_visible: false,
+            about_visible: false,
+            advert_visible: false
         },
         methods: {
             fetchSkills() {
@@ -26,12 +29,4 @@ const app = new Vue({
 
     });
 
-app.fetchSkills();
-
-let input = document.getElementById("searchInput");
-input.addEventListener("keyup", function(event) {
-  if (event.keyCode === 13) {
-    event.preventDefault();
-    document.getElementById("btn").click();
-  }
-});
+grades.fetchSkills();

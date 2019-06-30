@@ -110,7 +110,6 @@ class DataStorage:
 
         coll = self.db[DEF_COL]
         vacs = list(coll.aggregate(pipeline))
-        print(vacs)
         return [{'name': x['name'], 'url': x['url']} for x in vacs]
 
     def get_skills_ref(self):
