@@ -39,7 +39,7 @@
                 <span v-if="index < 5" class="tag is-primary">{{ value._id }}</span>
                 <span v-if="index >= 5 && index < 10" class="tag is-info">{{ value._id }}</span>
                 <span v-if="index >= 10" class="tag is-light">{{ value._id }}</span>
-                &nbsp;<a v-on:click.stop.prevent="value.visible = !value.visible">{{ value.frequency }}
+                &nbsp;<a @click.stop.prevent="value.visible = !value.visible">{{ value.frequency }}
                 jobs</a>
 
                 <div v-show="value.visible" style="margin-left: 3em;">

@@ -65,15 +65,11 @@ class DataStorage:
 
     @staticmethod
     def __create_search_pattern(search_str):
-        keywords = search_str.split()
-        keywords = set(keywords)
+        keywords = set(search_str.split())
         if len(keywords) > 1:
-            s = ''.join(r'\b' + re.escape(x) + r'\b|' for x in keywords)
-            s = s[:len(s) - 1]
-            pattern = f'({s}).*?({s})'
+            pattern = '^'.join(r'(?=.*\b' + re.escape(x) + r'\b)' for x in keywords) + r'.*$'
         else:
-            pattern = list(keywords)[0]
-            pattern = r'\b' + re.escape(pattern) + r'\b'
+            pattern = r'\b' + re.escape(list(keywords)[0]) + r'\b'
         return pattern
 
     def fetch_top_skills(self, search_str):
