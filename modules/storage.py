@@ -72,7 +72,7 @@ class DataStorage:
             pattern = r'\b' + re.escape(list(keywords)[0]) + r'\b'
         return pattern
 
-    def fetch_top_skills(self, search_str):
+    def fetch_top_skills(self, search_str, vacs_limit=0, no_vacs=False):
         pipeline = [
             {"$match": {"name": {"$regex": self.__create_search_pattern(search_str), "$options": "gi"}}},
             {"$unwind": "$key_skills"},
@@ -85,12 +85,13 @@ class DataStorage:
         ]
         coll = self.db[DEF_COL]
         top = list(coll.aggregate(pipeline))
-        for i in top:
-            i['vacs'] = self.get_vacancies_by_skill(i['_id'], search_str)
-            i['visible'] = False
+        if not no_vacs:
+            for i in top:
+                i['vacs'] = self.get_vacancies_by_skill(i['_id'], search_str, vacs_limit)
+                i['visible'] = False
         return top
 
-    def get_vacancies_by_skill(self, skill, search_str=''):
+    def get_vacancies_by_skill(self, skill, search_str='', limit=0):
         pipeline = []
 
         if search_str:
@@ -103,6 +104,11 @@ class DataStorage:
             {"$match": {"key_skills": {"$regex": skill, "$options": "gi"}}},
             {"$sort": {"pub_date": -1}}
         ])
+
+        if limit > 0:
+            pipeline.append(
+                {"$limit": limit}
+            )
 
         coll = self.db[DEF_COL]
         vacs = list(coll.aggregate(pipeline))
