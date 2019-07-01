@@ -112,7 +112,9 @@ class DataStorage:
 
         coll = self.db[DEF_COL]
         vacs = list(coll.aggregate(pipeline))
-        return [{'name': x['name'], 'url': x['url']} for x in vacs]
+        vacs = [{'name': x['name'], 'url': x['url']} for x in vacs]
+        # clean duplicates
+        return [dict(t) for t in {tuple(d.items()) for d in vacs}]
 
     def get_skills_ref(self):
         skills = list(self.get_docs(SKILLS_REF))
