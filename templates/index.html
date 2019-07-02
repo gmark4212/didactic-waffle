@@ -9,6 +9,8 @@
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css"
           integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.min.js"></script>
+    <script src="https://unpkg.com/vue-chartjs/dist/vue-chartjs.min.js"></script>
 </head>
 <body>
 
@@ -57,24 +59,32 @@
         </div>
         <br>
 
+        <line-chart></line-chart>
+
         <div class="notification is-light" v-show='api_visible'>
             <button class="delete" @click="api_visible=false"></button>
-            <h1 class="title is-4">Skill cloud API:</h1>
-            <p>The Skill cloud API allows you to search jobs with specified skills with JSON over HTTP.</p>
+            <h1 class="title is-4">Skoglee.com API:</h1>
+            <p>This API allows you to search jobs with specified skills with JSON over HTTP.</p>
             <br>
             <p><strong>To get a directory of skills with their IDs, use this URL:</strong></p>
-            <p>http://ec2-18-222-28-147.us-east-2.compute.amazonaws.com/api/v1/ref/skills/</p>
+            <p>http://skoglee.com/api/v1/ref/skills/</p>
             <br>
             <p><strong>To get a list of jobs for a particular skill, use this URL:</strong></p>
-            <p>http://ec2-18-222-28-147.us-east-2.compute.amazonaws.com/api/v1/vacancies/{skill}</p>
+            <p>http://skoglee.com/api/v1/vacancies/{skill}</p>
             <br>
-            <p><strong>To get a list of the 20 most required skills for a particular position, use this URL:</strong></p>
-            <p>http://ec2-18-222-28-147.us-east-2.compute.amazonaws.com/api/v1/topskills/{position}</p>
+            <p><strong>To get a list of the 20 most required skills for a particular position, use this URL:</strong>
+            </p>
+            <p>http://skoglee.com/api/v1/topskills/{position}</p>
         </div>
 
         <div class="notification is-light" v-show='about_visible'>
             <button class="delete" @click="about_visible=false"></button>
-            <h1 class="title is-4">About</h1>
+            <h1 class="title is-4">About project</h1>
+            <p>Skoglee is a webapp where you can view the most current developer skills for employers. Such an indicator
+                of the most sought-after technology in the industry at the time. For example, enter the title of the
+                post - python developer. It will display a list of technologies or tools required in the vacancies for this request in
+                descending order of their frequency. That is, in the top will be the most popular technology, the study
+                of which is worth spending time.</p>
         </div>
 
         <div class="notification is-light" v-show='advert_visible'>
@@ -93,7 +103,7 @@
                 <a @click.stop.prevent="api_visible = !api_visible">API</a>
             </p>
             <p>
-                <strong>Skill cloud</strong> by <a href="https://github.com/gmark4212"><i class="fab fa-github"></i>&nbsp;Mark
+                <strong>skoglee.com</strong> by <a href="https://github.com/gmark4212"><i class="fab fa-github"></i>&nbsp;Mark
                 G</a>
             </p>
         </div>
@@ -101,5 +111,6 @@
 </div>
 
 <script src="/static/js/main.js"></script>
+<script src="/static/js/components.js"></script>
 </body>
 </html>
