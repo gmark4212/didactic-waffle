@@ -2,8 +2,10 @@ const grades = new Vue({
         el: '#grades',
         data: {
             api: '/api/v1/skills/?search=',
-            searchLine: 'data scientist',
+            searchLine: 'python developer',
             skills: [],
+            labels: [],
+            freqs: [],
             fetching: false,
             api_visible: false,
             about_visible: false,
@@ -15,8 +17,9 @@ const grades = new Vue({
                 fetch(this.api + this.searchLine, {mode: 'no-cors'})
                     .then(response => response.json())
                     .then(data => {
-                        console.log(data);
-                        this.skills = data;
+                        this.skills = data.data;
+                        this.labels = this.skills.labels;
+                        this.freqs = this.skills.freqs;
                         this.fetching = false;
                     })
                     .catch(function (err) {

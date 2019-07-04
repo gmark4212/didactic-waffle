@@ -1,7 +1,9 @@
 {
   "name": "app",
   "version": "1.0.0",
-  "dependencies": {},
+  "dependencies": {
+    "vue-moment": "^4.0.0"
+  },
   "devDependencies": {
     "vue-charts": "^0.2.1"
   }

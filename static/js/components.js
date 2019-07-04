@@ -4,24 +4,59 @@ Vue.component('data-error', {
             </p>'`
 });
 
-Vue.component('line-chart', {
-    extends: VueChartJs.Line,
+Vue.component('pie-chart', {
+    extends: VueChartJs.Pie,
+    props: {
+        skills: {
+            type: Array,
+            required: false,
+            default: []
+        },
+        frequency: {
+            type: Array,
+            required: false,
+            default: []
+        }
+    },
     mounted() {
         this.renderChart({
-            labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+            labels: this.skills,
             datasets: [
                 {
-                    label: 'Data One',
-                    backgroundColor: '#1abc9c',
-                    data: [40, 39, 10, 40, 39, 80, 40]
-                },
-                {
-                    label: 'Data 2',
-                    backgroundColor: '#34495e',
-                    data: [30, 349, 150, 410, 139, 180, 240]
+                    backgroundColor: [
+                        '#1abc9c',
+                        '#2ecc71',
+                        '#3498db',
+                        '#9b59b6',
+                        '#34495e',
+                        '#f1c40f',
+                        '#e67e22',
+                        '#e74c3c',
+                        '#ecf0f1',
+                        '#95a5a6',
+                        '#16a085',
+                        '#27ae60',
+                        '#2980b9',
+                        '#8e44ad',
+                        '#2c3e50',
+                        '#f39c12',
+                        '#d35400',
+                        '#c0392b',
+                        '#bdc3c7',
+                        '#7f8c8d'
+                    ],
+                    data: this.frequency
                 }
             ]
-        }, {responsive: true, maintainAspectRatio: false})
+        }, {
+            responsive: true,
+            maintainAspectRatio: false,
+            pieceLabel: {
+                mode: 'percentage',
+                precision: 1
+            }
+        })
     }
 
 });
+

@@ -84,9 +84,14 @@ class DataStorage:
             {"$limit": SKILLS_LIMIT}
         ]
         coll = self.db[DEF_COL]
-        top = list(coll.aggregate(pipeline))
+        data = list(coll.aggregate(pipeline))
+        top = {
+            'data': data,
+            'labels': [x['_id'] for x in data],
+            'freqs': [x['frequency'] for x in data],
+        }
         if not no_vacs:
-            for i in top:
+            for i in top['data']:
                 i['vacs'] = self.get_vacancies_by_skill(i['_id'], search_str, vacs_limit)
                 i['visible'] = False
         return top
@@ -112,7 +117,7 @@ class DataStorage:
 
         coll = self.db[DEF_COL]
         vacs = list(coll.aggregate(pipeline))
-        vacs = [{'name': x['name'], 'url': x['url']} for x in vacs]
+        vacs = [{'name': x['name'], 'url': x['url'], 'pub_date': x['pub_date']} for x in vacs]
         # clean duplicates
         return [dict(t) for t in {tuple(d.items()) for d in vacs}]
 

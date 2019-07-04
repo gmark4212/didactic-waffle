@@ -37,7 +37,7 @@ def api_get_top_skills_with_vacs():
 
 @app.route('/api/v1/ref/skills/', methods=['GET'])
 def api_get_skills_ref():
-    return jsonify({'data': db.get_skills_ref()})
+    return jsonify(db.get_skills_ref())
 
 
 @app.route("/api/v1/vacancies/<string:skill>", methods=['GET'])
