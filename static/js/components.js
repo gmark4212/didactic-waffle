@@ -50,6 +50,11 @@ Vue.component('pie-chart', {
                 }
             })
         }
+    },
+    watch: {
+        skills() {
+            this.renderPieChart();
+        }
     }
 });
 
@@ -63,4 +68,3 @@ Vue.component('ads-card', {
 
 
 });
-

@@ -67,6 +67,7 @@
             </div>
 
             <div class="column">
+                <a @click.stop.prevent="renderChart">Update</a>
                 <pie-chart :skills="labels" :frequency="freqs"></pie-chart>
             </div>
 
@@ -83,17 +84,17 @@
         <div class="notification is-light" v-show='api_visible'>
             <button class="delete" @click="api_visible=false"></button>
             <h1 class="title is-4">Skoglee.com API</h1>
-            <p>This API allows you to search jobs with specified skills with JSON over HTTP.</p>
+            <p>This API allows you to search jobs with specified skills using JSON over HTTP.</p>
             <br>
-            <p><strong>To get a list of skills with their IDs use this URL:</strong></p>
-            <p>http://skoglee.com/api/v1/ref/skills/</p>
+            <p><strong>To get a list of skills use this URL:</strong></p>
+            <p>https://skoglee.com/api/v1/ref/skills/</p>
             <br>
             <p><strong>To get a list of jobs for a particular skill use this URL:</strong></p>
-            <p>http://skoglee.com/api/v1/vacancies/{skill}</p>
+            <p>https://skoglee.com/api/v1/vacancies/{skill}</p>
             <br>
-            <p><strong>To get a list of the 20 most required skills for a particular position use this URL:</strong>
+            <p><strong>To get a list of the 20 most required skills for a particular job position use this URL:</strong>
             </p>
-            <p>http://skoglee.com/api/v1/topskills/{position}</p>
+            <p>https://skoglee.com/api/v1/topskills/{position}</p>
         </div>
 
         <div class="notification is-light" v-show='about_visible'>
