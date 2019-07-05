@@ -53,7 +53,7 @@
                         <div v-show="value.visible" style="margin-left: 3em;">
                             <ul>
                                 <li v-for="vac in value.vacs">
-                                   <a :href="`${vac.url}`" target="_blank" class="is-size-7">{{ vac.name }}</a>
+                                    <a :href="`${vac.url}`" target="_blank" class="is-size-7">{{ vac.name }}</a>
                                 </li>
                             </ul>
                         </div>
@@ -71,7 +71,10 @@
             </div>
 
             <div class="column">
-                Ads will be here
+                <ads-card title="TensorFlow in Practice"
+                          desc="Discover the tools software developers use to build scalable AI-powered algorithms in TensorFlow, a popular open-source machine learning framework."></ads-card>
+                <ads-card title="AWS Fundamentals: Going Cloud-Native"
+                          desc="This course will introduce you to Amazon Web Services (AWS) core services and infrastructure. Through demonstrations you'll learn how to use and configure AWS services to deploy and host a cloud-native application."></ads-card>
             </div>
 
         </div>

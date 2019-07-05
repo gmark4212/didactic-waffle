@@ -18,8 +18,8 @@ const grades = new Vue({
                     .then(response => response.json())
                     .then(data => {
                         this.skills = data.data;
-                        this.labels = this.skills.labels;
-                        this.freqs = this.skills.freqs;
+                        this.labels = data.data.labels;
+                        this.freqs = data.data.freqs;
                         this.fetching = false;
                     })
                     .catch(function (err) {
