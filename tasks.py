@@ -9,6 +9,7 @@
 from celery import Celery
 from celery.schedules import crontab
 from modules.parsers import ParserFabric
+from modules.stackshare import SkillCrawler
 
 Fabric = ParserFabric()
 app = Celery('tasks',
@@ -19,6 +20,12 @@ app.conf.timezone = 'Asia/Bangkok'
 
 @app.on_after_configure.connect
 def setup_periodic_tasks(sender, **kwargs):
+    # Calls stackshare.io parser
+    sender.add_periodic_task(
+        crontab(hour=1, minute=00),
+        parse_stackshare,
+        name='Stackshare parsing',
+    )
     # Executes everyday
     for portion in range(20):
         sender.add_periodic_task(
@@ -32,3 +39,10 @@ def setup_periodic_tasks(sender, **kwargs):
 def parse_data(portion):
     for parser_id in Fabric.parsers_ids:
         Fabric.spawn(parser_id).fetch_vacancies_portion(portion)
+
+
+@app.task
+def parse_stackshare():
+    crawler = SkillCrawler()
+    crawler.fetch_skills()
+    del crawler

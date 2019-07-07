@@ -36,8 +36,12 @@ class DataStorage:
         if self.__is_valid(collection_name) and isinstance(data, dict):
             if '_id' in data and data['_id'] not in self.docs_map.keys():
                 self.docs_map[data['_id']] = data
-                print('+', data)
+            print('+', data)
             self.db[collection_name].insert_one(data)
+
+    def delete_docs(self, _filter=None, collection_name=None):
+        if _filter and isinstance(_filter, dict) and collection_name:
+            self.db[collection_name].delete_many(_filter)
 
     def __is_valid(self, collection_name):
         return bool(collection_name) and hasattr(self.db, collection_name)
@@ -47,14 +51,26 @@ class DataStorage:
             x = list()
             x.append(skills)
             skills = x
-        else:
+        elif isinstance(skills, list):
             skills = list(set(skills))
+        elif isinstance(skills, dict):
+            low = skills['low']
+            exist_in_ref = self.get_docs(SKILLS_REF, {'low': low}, 1)
+            if not exist_in_ref:
+                self.add_doc(SKILLS_REF, skills)
+            else:
+                for existing in exist_in_ref:
+                    if 'desc' not in existing:
+                        self.delete_docs(_filter={'low': low}, collection_name=SKILLS_REF)
+                        self.add_doc(SKILLS_REF, skills)
+            return
 
         for skill in skills:
-            lower_cased_skill = skill.lower()
-            exist_in_ref = self.get_docs(SKILLS_REF, {'low': lower_cased_skill}, 1)
-            if not exist_in_ref:
-                self.add_doc(SKILLS_REF, {'name': skill, 'low': lower_cased_skill})
+            if isinstance(skill, str):
+                lower_cased_skill = skill.lower()
+                exist_in_ref = self.get_docs(SKILLS_REF, {'low': lower_cased_skill}, 1)
+                if not exist_in_ref:
+                    self.add_doc(SKILLS_REF, {'name': skill, 'low': lower_cased_skill})
 
     def get_key_skills_ref(self):
         ref = self.get_docs(SKILLS_REF)
