@@ -17,6 +17,36 @@
 <div id="grades">
 
     <section class="hero is-link">
+
+        <!-- Hero head: will stick at the top -->
+        <div class="hero-head">
+            <nav class="navbar">
+                <div class="container">
+                    <div class="navbar-brand">
+                        <a class="navbar-item">
+                            <h6 class="title is-6">SKOGLEE.COM</h6>
+                        </a>
+                        <span class="navbar-burger burger" data-target="navbarMenuHeroA">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        </span>
+                    </div>
+                    <div id="navbarMenuHeroA" class="navbar-menu">
+                        <div class="navbar-end">
+                            <a class="navbar-item">
+                                Sign in
+                            </a>
+                            <a class="navbar-item">
+                                Register
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </div>
+        <!-- Hero head: will stick at the top -->
+
         <div class="hero-body">
             <div class="container">
                 <h1 class="title is-1">
@@ -43,8 +73,9 @@
                 </div>
                 <div v-else-if="skills.data">
                     <div v-for="(value,index) in skills.data">
-                        <span class="tag is-white">{{ ++index }}.</span>
-                        <span v-if="index < 5" class="tag is-primary">{{ value._id }}</span>
+
+                        <span class="tag is-white">{{ ++index }}.&nbsp;</span>
+                        <span v-if="index < 5" class="tag is-primary">{{ value._id }} </span>
                         <span v-if="index >= 5 && index < 10" class="tag is-info">{{ value._id }}</span>
                         <span v-if="index >= 10" class="tag is-light">{{ value._id }}</span>
                         &nbsp;<a @click.stop.prevent="value.visible = !value.visible">{{ value.frequency }}
@@ -114,8 +145,17 @@
 
     </div>
 
-    <footer class="footer">
+    <!--CARDLIST-->
+    <div class="container">
+        <div class="columns is-multiline">
+            <div class="column is-4" v-for="value in detailedOnly">
+                <skill-card :skill="value"></skill-card>
+            </div>
+        </div>
+    </div>
+    <!--CARDLIST-->
 
+    <footer class="footer">
         <div class="content has-text-centered is-primary">
             <p>
                 <a @click.stop.prevent="about_visible = !about_visible">About</a>&nbsp;&nbsp;&nbsp;

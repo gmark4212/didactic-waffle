@@ -30,6 +30,7 @@ def api_get_top_skills_with_vacs():
     search = escape(request.args.get('search'))
     if bool(search) and len(search) > 2:
         top = db.fetch_top_skills(search, VACS_LIMIT)
+        db.get_skill_details(top)
         return jsonify({'data': top})
     else:
         return abort(400)

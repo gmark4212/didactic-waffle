@@ -11,6 +11,15 @@ const grades = new Vue({
             about_visible: false,
             advert_visible: false
         },
+        computed: {
+            detailedOnly: function () {
+                console.log(this.skills.data);
+                data = this.skills.data.filter(function (item) {
+                    return 'desc' in item;
+                });
+                return data;
+            }
+        },
         methods: {
             fetchSkills() {
                 this.fetching = true;
@@ -21,6 +30,7 @@ const grades = new Vue({
                         this.labels = data.data.labels;
                         this.freqs = data.data.freqs;
                         this.fetching = false;
+                        console.log(this.skills);
                     })
                     .catch(function (err) {
                         this.skills = [];
@@ -30,6 +40,7 @@ const grades = new Vue({
             }
         }
 
-    });
+    })
+;
 
 grades.fetchSkills();

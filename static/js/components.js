@@ -68,3 +68,47 @@ Vue.component('ads-card', {
 
 
 });
+
+Vue.component('skill-card', {
+    props: ['skill'],
+    template: '<div class="card">\n' +
+        '  <div class="card-content">\n' +
+        '    <div class="media">\n' +
+        '      <div class="media-left">\n' +
+        '        <figure class="image is-64x64">\n' +
+        '          <a :href="`${skill.site}`" target="_blank"><img :src="`${skill.logo}`" alt=""></a>\n' +
+        '        </figure>\n' +
+        '      </div>\n' +
+        '      <div class="media-content">\n' +
+        '        <a :href="`${skill.site}`" target="_blank"><p class="title is-4">{{ skill._id }}</p></a>\n' +
+        '        <p class="subtitle is-6">{{ skill.ctg }}</p>\n' +
+        '      </div>\n' +
+        '    </div>\n' +
+        '    <div class="content">\n' +
+        '      {{ skill.desc }}\n' +
+        '      <br>\n' +
+        '      <a href="">Learn</a>\n' +
+        '    </div>\n' +
+        '  </div>\n' +
+        '</div>'
+});
+
+Vue.component('skill-media', {
+    props: ['skill'],
+    template: '<article class="media">\n' +
+        '  <figure class="media-left">\n' +
+        '    <p class="image is-64x64">\n' +
+        '      <img :src="`${skill.logo}`" alt="">\n' +
+        '    </p>\n' +
+        '  </figure>\n' +
+        '  <div class="media-content">\n' +
+        '    <div class="content">\n' +
+        '      <p>\n' +
+        '        <strong>{{ skill._id }}</strong> <small>#{{ skill.ctg }}</small>\n' +
+        '        <br>\n' +
+        '        {{ skill.desc }}\n' +
+        '      </p>\n' +
+        '    </div>' +
+        '</div>\n' +
+        '</article>'
+});

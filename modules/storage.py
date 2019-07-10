@@ -101,15 +101,18 @@ class DataStorage:
         ]
         coll = self.db[DEF_COL]
         data = list(coll.aggregate(pipeline))
+
         top = {
             'data': data,
             'labels': [x['_id'] for x in data],
             'freqs': [x['frequency'] for x in data],
         }
+
         if not no_vacs:
             for i in top['data']:
                 i['vacs'] = self.get_vacancies_by_skill(i['_id'], search_str, vacs_limit)
                 i['visible'] = False
+
         return top
 
     def get_vacancies_by_skill(self, skill, search_str='', limit=0):
@@ -140,6 +143,16 @@ class DataStorage:
     def get_skills_ref(self):
         skills = list(self.get_docs(SKILLS_REF))
         return [{'name': x['name'], '_id': str(x['_id'])} for x in skills]
+
+    def get_skill_details(self, top_skills):
+        for i in top_skills['data']:
+            s = self.get_docs(SKILLS_REF, _filter={'low': i['_id'].lower()}, limit=1)[0]
+            if s:
+                if 'desc' in s:
+                    i['desc'] = s['desc']
+                    i['ctg'] = s['ctg']
+                    i['logo'] = s['logo']
+                    i['site'] = s['site']
 
 
 class SalaryVacancyIterator(Iterator):
