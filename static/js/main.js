@@ -13,11 +13,13 @@ const grades = new Vue({
         },
         computed: {
             detailedOnly: function () {
-                console.log(this.skills.data);
-                data = this.skills.data.filter(function (item) {
-                    return 'desc' in item;
-                });
-                return data;
+                let data = this.skills.data;
+                if (data) {
+                    data = data.filter(function (item) {
+                        return 'desc' in item;
+                    });
+                    return data;
+                }
             }
         },
         methods: {
