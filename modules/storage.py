@@ -146,8 +146,9 @@ class DataStorage:
 
     def get_skill_details(self, top_skills):
         for i in top_skills['data']:
-            s = self.get_docs(SKILLS_REF, _filter={'low': i['_id'].lower()}, limit=1)[0]
+            s = self.get_docs(SKILLS_REF, _filter={'low': i['_id'].lower()}, limit=1)
             if s:
+                s = s[0]
                 if 'desc' in s:
                     i['desc'] = s['desc']
                     i['ctg'] = s['ctg']
