@@ -111,6 +111,21 @@
         </div>
 
         <br>
+    </div>
+
+    <!--CARDLIST-->
+    <div class="container">
+        <div class="columns is-multiline">
+            <div class="column is-4" v-for="value in detailedOnly">
+                <skill-card :skill="value"></skill-card>
+            </div>
+        </div>
+        <br>
+    </div>
+    <!--CARDLIST-->
+
+    <!-- notifications -->
+    <div class="container">
         <div class="notification is-light" v-show='api_visible'>
             <button class="delete" @click="api_visible=false"></button>
             <h1 class="title is-4">Skoglee.com API</h1>
@@ -142,18 +157,8 @@
             <button class="delete" @click="advert_visible=false"></button>
             <h1 class="title is-4">Advertisement</h1>
         </div>
-
     </div>
-
-    <!--CARDLIST-->
-    <div class="container">
-        <div class="columns is-multiline">
-            <div class="column is-4" v-for="value in detailedOnly">
-                <skill-card :skill="value"></skill-card>
-            </div>
-        </div>
-    </div>
-    <!--CARDLIST-->
+    <!-- notifications -->
 
     <footer class="footer">
         <div class="content has-text-centered is-primary">

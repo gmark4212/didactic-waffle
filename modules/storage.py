@@ -27,10 +27,10 @@ class DataStorage:
 
     def get_doc_by_id(self, collection_name=None, key=None):
         if key:
-            if key in self.docs_map.keys():
-                return self.docs_map[key]
-            else:
-                return self.db.get_docs(collection_name, {'_id': key}, 1)
+            return self.docs_map.get(
+                self.docs_map[key],
+                self.db.get_docs(collection_name, {'_id': key}, 1)
+            )
 
     def add_doc(self, collection_name=None, data=None):
         if self.__is_valid(collection_name) and isinstance(data, dict):
