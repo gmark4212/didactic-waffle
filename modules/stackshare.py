@@ -39,6 +39,7 @@ class SkillCrawler:
                 break
 
             divs = soup.find_all('div', {'class': 'trending-item-container'})
+
             if divs:
                 for i in divs:
                     ctg = ''

@@ -1,0 +1,85 @@
+<!-- templates/signup.html -->
+(% extends "base.html" %)
+
+(% block content %)
+<section class="hero is-link is-fullheight">
+    <!-- Hero head: will stick at the top -->
+    <div class="hero-head">
+        <nav class="navbar">
+            <div class="container">
+                <div class="navbar-brand">
+                    <a href="/" class="navbar-item">
+                        <h6 class="title is-6">SKOGLEE.COM</h6>
+                    </a>
+                    <span class="navbar-burger burger" data-target="navbarMenuHeroA">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+          </span>
+                </div>
+                <div id="navbarMenuHeroA" class="navbar-menu">
+                    <div class="navbar-end">
+                        <a href="/" class="navbar-item">
+                            Home
+                        </a>
+                        <a href="/login" class="navbar-item">
+                            Login
+                        </a>
+                        <a href="/signup" class="navbar-item is-active">
+                            Sign up
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Hero content: will be in the middle -->
+    <div class="hero-body">
+        <div class="container has-text-centered">
+
+            <!-- FORM -->
+            <div class="column is-4 is-offset-4">
+                <h3 class="title">Sign Up</h3>
+                <div class="box">
+
+                    (% with messages = get_flashed_messages() %)
+                        (% if messages %)
+                            <div class="notification is-danger">
+                                (( messages[0] )). Go to <a href="(( url_for('login') ))">login page</a>.
+                            </div>
+                        (% endif %)
+                    (% endwith %)
+                    
+                    <form method="POST" action="/signup">
+                        <div class="field">
+                            <div class="control">
+                                <input class="input is-large" type="email" name="email" placeholder="Email"
+                                       autofocus="">
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <div class="control">
+                                <input class="input is-large" type="text" name="name" placeholder="Name" autofocus="">
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <div class="control">
+                                <input class="input is-large" type="password" name="password" placeholder="Password">
+                            </div>
+                        </div>
+
+                        <button class="button is-block is-info is-large is-fullwidth">Sign Up</button>
+                    </form>
+                </div>
+            </div>
+            <!-- FORM -->
+
+        </div>
+    </div>
+
+</section>
+
+(% endblock %)

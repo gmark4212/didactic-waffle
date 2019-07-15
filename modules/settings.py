@@ -8,3 +8,4 @@ SKILLS_LIMIT = 20
 VACS_LIMIT = 100
 DEF_COL = 'vacancies'
 SKILLS_REF = 'skills'
+AUTH_COL = 'users'
