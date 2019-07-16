@@ -22,12 +22,23 @@
                         <a href="/" class="navbar-item">
                             Home
                         </a>
-                        <a href="/login" class="navbar-item">
+
+                        (% if current_user.is_authenticated %)
+                        <a href="/board" class="navbar-item">
+                            Dashboard
+                        </a>
+                        <a href="/logout" class="navbar-item">
+                            Logout
+                        </a>
+                        (% else %)
+                        <a href="/login" class="navbar-item is-active">
                             Login
                         </a>
-                        <a href="/signup" class="navbar-item is-active">
+                        <a href="/signup" class="navbar-item">
                             Sign up
                         </a>
+                        (% endif %)
+
                     </div>
                 </div>
             </div>

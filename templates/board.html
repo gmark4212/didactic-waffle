@@ -1,0 +1,43 @@
+<!-- templates/board.html -->
+(% extends "base.html" %)
+(% block content %)
+
+<nav class="navbar is-primary">
+    <div class="container">
+        <div class="navbar-brand">
+            <a href="/" class="navbar-item">
+                <h6 class="title is-6">SKOGLEE.COM</h6>
+            </a>
+            <span class="navbar-burger burger" data-target="navbarMenuHeroA">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        </span>
+        </div>
+        <div id="navbarMenuHeroA" class="navbar-menu">
+            <div class="navbar-end">
+                <a href="/" class="navbar-item">
+                    Home
+                </a>
+                <a href="/board" class="navbar-item is-active">
+                    Dashboard
+                </a>
+
+                (% if current_user.is_authenticated %)
+                <a href="/logout" class="navbar-item">
+                    Logout
+                </a>
+                (% endif %)
+
+            </div>
+        </div>
+    </div>
+</nav>
+
+
+<div class="container">
+    <h1 class="title">
+        Board, (( name ))
+    </h1>
+</div>
+(% endblock %)
