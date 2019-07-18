@@ -2,7 +2,7 @@ const grades = new Vue({
         el: '#grades',
         data: {
             api: '/api/v1/skills/?search=',
-            searchLine: 'python developer',
+            searchLine: 'data scientist',
             skills: [],
             labels: [],
             freqs: [],
