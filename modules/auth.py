@@ -4,6 +4,7 @@
 
 class User:
     def __init__(self, db_user):
+        self.active = db_user['active']
         self.email = db_user['email']
         self.name = db_user['name']
 

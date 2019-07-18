@@ -2,7 +2,8 @@
 (% extends "base.html" %)
 
 (% block content %)
+(% include 'inc_board_navbar.html' %)
 <h1 class="title">
-  Welcome, Anthony!
+  Welcome, (( current_user.name ))!
 </h1>
 (% endblock %)

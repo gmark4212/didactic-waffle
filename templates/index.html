@@ -9,41 +9,7 @@
 
         <!-- Hero head: will stick at the top -->
         <div class="hero-head">
-            <nav class="navbar">
-                <div class="container">
-                    <div class="navbar-brand">
-                        <a href="/" class="navbar-item">
-                            <h6 class="title is-6">SKOGLEE.COM</h6>
-                        </a>
-                        <span class="navbar-burger burger" data-target="navbarMenuHeroA">
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                        </span>
-                    </div>
-                    <div id="navbarMenuHeroA" class="navbar-menu">
-                        <div class="navbar-end">
-
-                            (% if current_user.is_authenticated %)
-                                <a href="/board" class="navbar-item">
-                                    Dashboard
-                                </a>
-                                <a href="/logout" class="navbar-item">
-                                    Logout
-                                </a>
-                            (% else %)
-                                <a href="/login" class="navbar-item">
-                                    Login
-                                </a>
-                                <a href="/signup" class="navbar-item">
-                                    Sign up
-                                </a>
-                            (% endif %)
-
-                        </div>
-                    </div>
-                </div>
-            </nav>
+            (% include 'inc_board_navbar.html' %)
         </div>
         <!-- Hero head: will stick at the top -->
 

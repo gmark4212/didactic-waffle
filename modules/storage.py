@@ -43,6 +43,12 @@ class DataStorage:
         if _filter and isinstance(_filter, dict) and collection_name:
             self.db[collection_name].delete_many(_filter)
 
+    def update_doc(self, collection_name=None, _filter=None, set_dict=None):
+        if self.__is_valid(collection_name) \
+                and _filter and isinstance(_filter, dict) \
+                and set_dict and isinstance(set_dict, dict):
+            self.db[collection_name].update_one(_filter, {"$set": set_dict}, upsert=False)
+
     def __is_valid(self, collection_name):
         return bool(collection_name) and hasattr(self.db, collection_name)
 

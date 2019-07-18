@@ -1,11 +1,14 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from flask import Flask, jsonify, request, abort, escape, flash
+from flask import Flask, jsonify, abort, escape, flash
 from flask import render_template, redirect, url_for, request
 from flask_login import login_user, logout_user, login_required, LoginManager
+from flask_mail import Mail, Message
 from werkzeug.security import generate_password_hash, check_password_hash
-from modules.settings import VACS_LIMIT, AUTH_COL
+from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
+from modules.settings import VACS_LIMIT, AUTH_COL, CONFIRM_SEC_TO_EXPIRE, SITE_URL
+from modules._sensitive import SECRET, EMAIL_CONFIRM_SALT, MAIL_PASSWORD
 from modules.storage import DataStorage
 from modules.auth import User
 
@@ -23,7 +26,21 @@ class CustomFlask(Flask):
 
 
 app = CustomFlask(__name__)
-app.config['SECRET_KEY'] = 'VFfihUSDY873r1e(*&DE(s89d*(*&#*Q$fgsdfv286749wdyu59dhX!@'
+app.config['TESTING'] = False
+app.config['SECRET_KEY'] = SECRET
+app.config['MAIL_SERVER'] = 'smtp.mail.ru'
+app.config['MAIL_PORT'] = 465
+app.config['MAIL_USERNAME'] = 'noreply@skoglee.com'
+app.config['MAIL_PASSWORD'] = MAIL_PASSWORD
+app.config['MAIL_USE_TLS'] = False
+app.config['MAIL_USE_SSL'] = True
+app.config['MAIL_DEFAULT_SENDER'] = 'noreply@skoglee.com'
+
+
+mail = Mail(app)
+mail.init_app(app)
+
+serializer = URLSafeTimedSerializer(SECRET)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -37,6 +54,10 @@ def get_user(filter_dict):
     if user:
         user = user[0]
     return user
+
+
+def get_confirmation_token(email):
+    return serializer.dumps(email, EMAIL_CONFIRM_SALT)
 
 
 @login_manager.user_loader
@@ -108,16 +129,32 @@ def signup():
 
 @app.route('/signup', methods=['POST'])
 def signup_post():
-    email = request.form.get('email')
-    name = request.form.get('name')
-    password = request.form.get('password')
+    email = escape(request.form.get('email'))
+    name = escape(request.form.get('name'))
+    password = escape(request.form.get('password'))
 
-    user = get_user(filter_dict={'email': email})
-    if user:
-        flash('Email address already exists')
+    if not email:
+        flash('You should fill email')
         return redirect(url_for('signup'))
 
-    db.add_doc(AUTH_COL, {'email': email, 'name': name, 'password': generate_password_hash(password, method='sha256')})
+    if not password:
+        flash('You should fill password')
+        return redirect(url_for('signup'))
+
+    user_exist = get_user(filter_dict={'email': email})
+    if user_exist:
+        flash(f'Email address {email} already exists')
+        return redirect(url_for('signup'))
+
+    db.add_doc(AUTH_COL, {'active': False, 'email': email, 'name': name, 'password': generate_password_hash(password, method='sha256')})
+
+    token = get_confirmation_token(email)
+    link = SITE_URL + url_for('confirm_email', token=token, external=True)
+    msg = Message('Email confirmation for Skoglee.com', sender='noreply@skoglee.com', recipients=[email])
+    msg.html = f'<p>Awesome!</p><p>One last thing - please confirm your email following this link:</p> ' \
+        f'<p><a href="{link}">{link}</a></p>'
+    mail.send(msg)
+
     return redirect(url_for('login'))
 
 
@@ -142,6 +179,30 @@ def login_post():
 def logout():
     logout_user()
     return redirect(url_for('index'))
+
+
+@app.route('/confirm_email/<token>')
+def confirm_email(token):
+    try:
+        email = serializer.loads(token, salt=EMAIL_CONFIRM_SALT, max_age=CONFIRM_SEC_TO_EXPIRE)
+        db_user = get_user(filter_dict={'email': email})
+        if db_user:
+            db.update_doc(AUTH_COL, _filter={'email': email}, set_dict={'active': True})
+    except SignatureExpired:
+        return redirect(url_for('page_not_found'))
+    except BadSignature:
+        return redirect(url_for('page_not_found'))
+    return redirect(url_for('login'))
+
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
+
+
+@app.errorhandler(500)
+def srv_error(e):
+    return render_template('500.html'), 500
 
 
 if __name__ == '__main__':
