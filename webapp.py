@@ -146,15 +146,18 @@ def signup_post():
         flash(f'Email address {email} already exists')
         return redirect(url_for('signup'))
 
-    db.add_doc(AUTH_COL, {'active': False, 'email': email, 'name': name, 'password': generate_password_hash(password, method='sha256')})
+    db.add_doc(AUTH_COL, {'active': False, 'email': email, 'name': name,
+                          'password': generate_password_hash(password, method='sha256')})
 
     token = get_confirmation_token(email)
     link = SITE_URL + url_for('confirm_email', token=token, external=True)
-    msg = Message('Email confirmation for Skoglee.com', sender='noreply@skoglee.com', recipients=[email])
-    msg.html = f'<p>Awesome!</p><p>One last thing - please confirm your email following this link:</p> ' \
-        f'<p><a href="{link}">{link}</a></p>'
-    mail.send(msg)
+    msg = Message('[Skoglee.com] Please confirm your account', sender='noreply@skoglee.com', recipients=[email])
+    msg.html = f'<p>To gain access to all functions of your Skoglee advertisement account confirm your email clicking this link </p><p><a href="{link}">{link}</a></p>'
 
+    try:
+        mail.send(msg)
+    except Exception:
+        redirect(url_for('500'))
     return redirect(url_for('login'))
 
 
