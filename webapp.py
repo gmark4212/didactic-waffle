@@ -157,7 +157,7 @@ def signup_post():
     try:
         mail.send(msg)
     except Exception:
-        redirect(url_for('500'))
+        redirect(url_for('srv_error'))
     return redirect(url_for('login'))
 
 
