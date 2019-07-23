@@ -208,5 +208,11 @@ def srv_error(e):
     return render_template('500.html'), 500
 
 
+@app.route('/campaign')
+@login_required
+def campaign():
+    return render_template('campaign.html')
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
