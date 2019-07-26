@@ -1,0 +1,27 @@
+<!-- templates/account.html -->
+(% extends "base.html" %)
+(% block content %)
+(% include 'includes/inc_board_navbar.html' %)
+
+<div class="section" id="account_spa">
+
+    <div class="columns is-multiline">
+        <left-side-menu @menu-selected="onMenuSelect"></left-side-menu>
+
+        <main class="column">
+            <dashboard v-if="selected_menu == 0"></dashboard>
+            <campaign v-else-if="selected_menu == 1"></campaign>
+        </main>
+
+    </div>
+
+</div>
+
+(% endblock %)
+
+(% block extra_js %)
+<script src="/static/js/lib/bulma-tagsinput.min.js"></script>
+<script src="/static/js/account/dashboard.js"></script>
+<script src="/static/js/account/campaign.js"></script>
+<script src="/static/js/account/account.js"></script>
+(% endblock %)

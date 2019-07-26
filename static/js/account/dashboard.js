@@ -1,16 +1,5 @@
-<!-- templates/board.html -->
-(% extends "base.html" %)
-
-(% block content %)
-(% include 'inc_board_navbar.html' %)
-
-<div class="section">
-    <div class="columns">
-        <!--  LEFT SIDEBAR -->
-        (% include 'inc_board_left_sidebar.html' %)
-        <!--  LEFT SIDEBAR -->
-
-        <main class="column">
+Vue.component('dashboard', {
+    template: `<div>
             <div class="level">
                 <div class="level-left">
                     <div class="level-item">
@@ -18,7 +7,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="columns is-multiline">
                 <div class="column">
                     <div class="box">
@@ -125,20 +113,5 @@
                     </div>
                 </div>
             </div>
-
-            <div class="container">
-                <br>
-                <h4 class="title is-4">
-                    Hello, (( current_user.name ))
-                </h4>
-                (% if not current_user.active %)
-                (% include 'inc_await_confirmation.html' %)
-                (% endif %)
-                <p class="subtitle">A little patience. New updates coming soon...</p>
-            </div>
-
-        </main>
-    </div>
-</div>
-
-(% endblock %)
+            </div>`
+});

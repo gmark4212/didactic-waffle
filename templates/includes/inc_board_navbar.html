@@ -5,10 +5,10 @@
                 SKOGLEE.COM
             </a>
             <span class="navbar-burger burger" data-target="navbarMenuHeroA">
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                        </span>
+                <span><a href="/" class="navbar-item">Home</a></span>
+                <span></span>
+                <span></span>
+                </span>
         </div>
         <div id="navbarMenuHeroA" class="navbar-menu">
             <div class="navbar-end">
@@ -16,8 +16,8 @@
                     Home
                 </a>
                 (% if current_user.is_authenticated %)
-                <a href="/board" class="navbar-item">
-                    Dashboard
+                <a href="/account" class="navbar-item">
+                    Account
                 </a>
                 <a href="/logout" class="navbar-item">
                     Logout

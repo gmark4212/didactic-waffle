@@ -111,10 +111,10 @@ def profile():
     return render_template('profile.html')
 
 
-@app.route('/board')
+@app.route('/account')
 @login_required
-def board():
-    return render_template('board.html')
+def account():
+    return render_template('account.html')
 
 
 @app.route('/login')
@@ -208,7 +208,7 @@ def srv_error(e):
     return render_template('500.html'), 500
 
 
-@app.route('/campaign')
+@app.route('/account/campaign')
 @login_required
 def campaign():
     return render_template('campaign.html')
