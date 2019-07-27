@@ -174,7 +174,7 @@ def login_post():
 
     login_user(User(db_user))
     flash('Logged in successfully.')
-    return redirect(url_for('board'))
+    return redirect(url_for('account'))
 
 
 @app.route('/logout')
