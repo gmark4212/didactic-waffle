@@ -1,15 +1,16 @@
-Vue.component('campaign', {
-    mounted() {
-        bulmaTagsinput.attach();
+Vue.component('campaign-formset', {
+    methods: {
+        onButtonDelete(index) {
+            this.$emit('deleted');
+        }
     },
-    template: `<div>
-    <div class="title">Campaign</div>
-    <a href="" class="button is-light"><i class="fas fa-plus"></i>&nbsp;Add course</a>
-    <br><br>
-
-    <form action="#">
+    template: `        
+        <div class="column is-6">
+        <div class="box">
+        <button class="delete is-pulled-right" @click="onButtonDelete"></button>
+        
         <div class="field">
-            <label class="label">Tags</label>
+            <label class="label">Skills</label>
             <div class="control">
                 <input class="input" type="tags" placeholder="Add Tag" value="">
             </div>
@@ -35,17 +36,49 @@ Vue.component('campaign', {
                 <textarea class="textarea" placeholder=""></textarea>
             </div>
         </div>
+        
+        </div>
+        </div>`
+});
 
-        <div class="field is-grouped">
+Vue.component('campaign', {
+    data: function () {
+        return {
+            forms: [
+                {}
+            ]
+        }
+    },
+    mounted() {
+        bulmaTagsinput.attach();
+    },
+    methods: {
+        addCourse() {
+            this.forms.push({});
+        },
+        delCourse() {
+            this.forms.pop();
+        },
+    },
+    template: `<div>
+    <div class="title">Campaign</div>
+    
+    <form action="#">
+    
+        <div class="columns is-multiline" id="form-boxes-container">
+            <campaign-formset v-for="set in forms" @deleted="delCourse"></campaign-formset>
+        </div>
+        
+         <div class="field is-grouped">
             <div class="control">
-                <button class="button is-link">Submit</button>
+                <button class="button is-primary" @click="addCourse">
+                <i class="fas fa-plus"></i>&nbsp;Add course</button>
             </div>
             <div class="control">
-                <button class="button is-text">Cancel</button>
+                <button class="button is-link">Save campaign</button>
             </div>
         </div>
-
+        
     </form> 
-
 </div>`
 });

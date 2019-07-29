@@ -11,7 +11,7 @@ Vue.component('left-side-menu', {
         selectItem(index) {
             this.resetMenuActivity();
             this.menu[index] = true;
-            this.$emit('menu-selected', index)
+            this.$emit('menu-selected', index);
         },
     },
     template: '<aside class="column is-2">\n' +
