@@ -45,7 +45,7 @@ Vue.component('campaign', {
             </div>
         </div>
 
-    </form>
+    </form> 
 
 </div>`
 });

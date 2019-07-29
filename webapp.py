@@ -152,7 +152,8 @@ def signup_post():
     token = get_confirmation_token(email)
     link = SITE_URL + url_for('confirm_email', token=token, external=True)
     msg = Message('[Skoglee.com] Please confirm your account', sender='noreply@skoglee.com', recipients=[email])
-    msg.html = f'<p>To gain access to all functions of your Skoglee advertisement account confirm your email clicking this link </p><p><a href="{link}">{link}</a></p>'
+    msg.html = f'<p>To gain access to all functions of your Skoglee advertisement account confirm your email ' \
+        f'clicking this link </p><p><a href="{link}">{link}</a></p>'
 
     try:
         mail.send(msg)
