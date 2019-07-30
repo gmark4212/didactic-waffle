@@ -32,7 +32,7 @@
             <div class="column">
 
                 <div v-if="fetching">
-                    <progress class="progress is-small is-primary" max="100"></progress>
+                    <progress class="progress is-small is-info" max="100">60%</progress>
                 </div>
                 <div v-else-if="skills.data">
                     <div v-for="(value,index) in skills.data">
@@ -55,7 +55,7 @@
                     </div>
                 </div>
                 <div v-else>
-                    <progress class="progress is-small is-primary" max="100"></progress>
+                    <progress class="progress is-small is-info" max="100">60%</progress>
                 </div>
 
             </div>
