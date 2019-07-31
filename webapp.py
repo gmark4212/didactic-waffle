@@ -215,5 +215,18 @@ def campaign():
     return render_template('campaign.html')
 
 
+@app.route("/account/getcourses", methods=['POST'])
+def get_user_courses():
+    # TODO: make protected data receiving
+    if request.method == 'POST':
+        return jsonify({
+            'id': '9a34d5ef-281b-422e-8ee3-35ca39d3abf8',
+            'title': 'Data from server',
+            'url': 'skogglee.com',
+            'description': 'flask data',
+            'skills': ['flask', 'celery']
+        })
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0')

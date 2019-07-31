@@ -1,14 +1,10 @@
 Vue.component('campaign-formset', {
-    methods: {
-        onButtonDelete(index) {
-            this.$emit('deleted');
-        }
-    },
+    methods: {},
     props: ['course'],
     template: `        
         <div class="column is-6">
         <div class="box">
-        <button class="delete is-pulled-right" @click="onButtonDelete"></button>
+        <button class="delete is-pulled-right" @click="$emit('deleted', course.id)"></button>
         
         <div class="field">
             <label class="label">Skills</label>
@@ -46,7 +42,27 @@ Vue.component('campaign', {
     data: function () {
         return {
             forms: [
-                {'id': 1, 'title': 'Python course', 'url': 'python.org', 'description': 'super course', 'skills': ['django','mongodb']}
+                {
+                    'id': 0,
+                    'title': 'Python course',
+                    'url': 'python.org',
+                    'description': 'super Python course',
+                    'skills': ['django', 'mongodb']
+                },
+                {
+                    'id': 1,
+                    'title': 'Java course',
+                    'url': 'java.org',
+                    'description': 'java',
+                    'skills': ['java', 'spring']
+                },
+                {
+                    'id': 2,
+                    'title': 'Node.JS course',
+                    'url': 'nodejs.org',
+                    'description': 'Node super course',
+                    'skills': ['javascript', 'express']
+                }
             ]
         }
     },
@@ -54,15 +70,30 @@ Vue.component('campaign', {
         bulmaTagsinput.attach();
     },
     methods: {
+        fetchCourses() {},
         addCourse() {
-            this.forms.push({});
+            this.forms.push({'id': this.generateUUID()});
         },
-        delCourse() {
-            this.forms.pop();
+        delCourse(cid) {
+            this.forms = this.forms.filter((e) => {
+                return e.id !== cid
+            });
         },
         saveCampaign() {
             console.log(this.forms);
         },
+        generateUUID() {
+            let d = new Date().getTime();
+            if (typeof performance !== 'undefined' && typeof performance.now === 'function') {
+                d += performance.now(); //use high-precision timer if available
+            }
+            let newGuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                let r = (d + Math.random() * 16) % 16 | 0;
+                d = Math.floor(d / 16);
+                return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+            });
+            return newGuid;
+        }
     },
     template: `<div>
     <div class="title">Campaign</div>
@@ -71,8 +102,9 @@ Vue.component('campaign', {
     
         <div class="columns is-multiline">
             <campaign-formset 
-            v-for="course in forms" @deleted="delCourse" 
-            v-bind:course="course"
+            v-for="(course, index)  in forms" @deleted="delCourse" 
+            :course="course"
+            :key="course.id"
             ></campaign-formset>
         </div>
         
