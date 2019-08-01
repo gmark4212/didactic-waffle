@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from flask import Flask, jsonify, abort, escape, flash
+from flask import Flask, jsonify, abort, escape, flash, json
 from flask import render_template, redirect, url_for, request
 from flask_login import login_user, logout_user, login_required, LoginManager
 from flask_mail import Mail, Message
@@ -215,7 +215,7 @@ def campaign():
     return render_template('campaign.html')
 
 
-@app.route("/account/getcourses", methods=['POST'])
+@app.route("/campaign/getcourses", methods=['POST'])
 def get_user_courses():
     # TODO: make protected data receiving
     if request.method == 'POST':
@@ -226,6 +226,16 @@ def get_user_courses():
             'description': 'flask data',
             'skills': ['flask', 'celery']
         })
+
+
+@app.route('/campaign/save', methods=['POST'])
+@login_required
+def save_campaign():
+    if request.method == 'POST':
+        if not request.json:
+            abort(400)
+        print(request.json)
+        return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
 
 
 if __name__ == '__main__':

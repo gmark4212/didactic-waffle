@@ -70,7 +70,8 @@ Vue.component('campaign', {
         bulmaTagsinput.attach();
     },
     methods: {
-        fetchCourses() {},
+        fetchCourses() {
+        },
         addCourse() {
             this.forms.push({'id': this.generateUUID()});
         },
@@ -79,8 +80,21 @@ Vue.component('campaign', {
                 return e.id !== cid
             });
         },
-        saveCampaign() {
+        camapaignSubmit() {
             console.log(this.forms);
+            fetch("/campaign/save", {
+                method: "post",
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(this.forms)
+            })
+                .then((response) => {
+                    if (response.ok) {
+                        console.log('saved');
+                    }
+                });
         },
         generateUUID() {
             let d = new Date().getTime();
@@ -98,7 +112,7 @@ Vue.component('campaign', {
     template: `<div>
     <div class="title">Campaign</div>
     
-    <form>
+    <form @submit.prevent="camapaignSubmit">
     
         <div class="columns is-multiline">
             <campaign-formset 
@@ -114,7 +128,7 @@ Vue.component('campaign', {
                 <i class="fas fa-plus"></i>&nbsp;Add course</button>
             </div>
             <div class="control">
-                <button class="button is-link" @click="saveCampaign">Save campaign</button>
+                <button type="submit" class="button is-link">Save campaign</button>
             </div>
         </div>
         
