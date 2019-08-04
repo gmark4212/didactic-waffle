@@ -3,11 +3,11 @@
 
 from flask import Flask, jsonify, abort, escape, flash, json
 from flask import render_template, redirect, url_for, request
-from flask_login import login_user, logout_user, login_required, LoginManager
+from flask_login import login_user, logout_user, login_required, LoginManager, current_user
 from flask_mail import Mail, Message
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
-from modules.settings import VACS_LIMIT, AUTH_COL, CONFIRM_SEC_TO_EXPIRE, SITE_URL
+from modules.settings import VACS_LIMIT, AUTH_COL, CONFIRM_SEC_TO_EXPIRE, SITE_URL, ADS_COL
 from modules._sensitive import SECRET, EMAIL_CONFIRM_SALT, MAIL_PASSWORD
 from modules.storage import DataStorage
 from modules.auth import User
@@ -216,6 +216,7 @@ def campaign():
 
 
 @app.route("/campaign/getcourses", methods=['POST'])
+@login_required
 def get_user_courses():
     # TODO: make protected data receiving
     if request.method == 'POST':
@@ -235,6 +236,9 @@ def save_campaign():
         if not request.json:
             abort(400)
         print(request.json)
+        # TODO: make saving new data to db
+        db.delete_docs(_filter={'email': current_user.email}, collection_name=ADS_COL)
+        db.add_doc(collection_name=ADS_COL, data={'email': current_user.email, 'campaign': request.json})
         return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
 
 
