@@ -215,18 +215,19 @@ def campaign():
     return render_template('campaign.html')
 
 
-@app.route("/campaign/getcourses", methods=['POST'])
+@app.route("/campaign/fetch", methods=['POST'])
 @login_required
-def get_user_courses():
-    # TODO: make protected data receiving
+def fetch_campaign():
     if request.method == 'POST':
-        return jsonify({
-            'id': '9a34d5ef-281b-422e-8ee3-35ca39d3abf8',
-            'title': 'Data from server',
-            'url': 'skogglee.com',
-            'description': 'flask data',
-            'skills': ['flask', 'celery']
-        })
+        if not request.json:
+            abort(400)
+        query = request.get_json()
+        if query.get('request', None) == 'campaign':
+            data = db.get_docs(collection_name=ADS_COL, _filter={'email': current_user.email})
+            camp = data[0].get('campaign', None)
+            if camp:
+                return jsonify(camp)
+        abort(400)
 
 
 @app.route('/campaign/save', methods=['POST'])

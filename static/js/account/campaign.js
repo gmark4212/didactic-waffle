@@ -44,33 +44,38 @@ Vue.component('campaign-formset', {
 Vue.component('campaign', {
     data: function () {
         return {
-            forms: [
-                {
-                    'id': 0,
-                    'title': 'Python course',
-                    'url': 'python.org',
-                    'description': 'super Python course',
-                    'skills': ['django', 'mongodb']
-                },
-                {
-                    'id': 1,
-                    'title': 'Java course',
-                    'url': 'java.org',
-                    'description': 'java',
-                    'skills': ['java', 'spring']
-                },
-                {
-                    'id': 2,
-                    'title': 'Node.JS course',
-                    'url': 'nodejs.org',
-                    'description': 'Node super course',
-                    'skills': ['javascript', 'express']
-                }
-            ]
+            forms: [],
+            saved: false
+        }
+    },
+    mounted() {
+        this.fetchUserCampaign();
+    },
+    watch: {
+        forms: {
+            handler: 'campaignChanged',
+            deep: true
         }
     },
     methods: {
-        fetchCourses() {
+        campaignChanged() {
+            this.saved = false;
+        },
+        fetchUserCampaign() {
+            fetch('/campaign/fetch', {
+                method: "post",
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({'request': 'campaign'})
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data) {
+                        this.forms = data;
+                    }
+                })
         },
         addCourse() {
             this.forms.push({'id': this.generateUUID()});
@@ -80,8 +85,7 @@ Vue.component('campaign', {
                 return e.id !== cid
             });
         },
-        camapaignSubmit() {
-            console.log(this.forms);
+        campaignSubmit() {
             fetch("/campaign/save", {
                 method: "post",
                 headers: {
@@ -92,7 +96,7 @@ Vue.component('campaign', {
             })
                 .then((response) => {
                     if (response.ok) {
-                        console.log('saved');
+                        this.saved = true;
                     }
                 });
         },
@@ -112,7 +116,7 @@ Vue.component('campaign', {
     template: `<div>
     <div class="title">Campaign</div>
     
-    <form @submit.prevent="camapaignSubmit">
+    <form @submit.prevent="campaignSubmit">
     
         <div class="columns is-multiline">
             <campaign-formset 
@@ -121,14 +125,16 @@ Vue.component('campaign', {
             :key="course.id"
             ></campaign-formset>
         </div>
-        
+
          <div class="field is-grouped">
             <div class="control">
                 <button class="button is-primary" @click="addCourse">
                 <i class="fas fa-plus"></i>&nbsp;Add course</button>
             </div>
             <div class="control">
-                <button type="submit" class="button is-link">Save campaign</button>
+                <button type="submit" class="button is-link" :disabled="saved">
+                    Save campaign
+                </button>
             </div>
         </div>
         
