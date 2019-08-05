@@ -235,8 +235,6 @@ def save_campaign():
     if request.method == 'POST':
         if not request.json:
             abort(400)
-        print(request.json)
-        # TODO: make saving new data to db
         db.delete_docs(_filter={'email': current_user.email}, collection_name=ADS_COL)
         db.add_doc(collection_name=ADS_COL, data={'email': current_user.email, 'campaign': request.json})
         return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}

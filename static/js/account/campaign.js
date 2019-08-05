@@ -1,3 +1,5 @@
+Vue.component('input-tag', vueInputTag.default);
+
 Vue.component('campaign-formset', {
     methods: {},
     props: ['course'],
@@ -9,9 +11,9 @@ Vue.component('campaign-formset', {
         <div class="field">
             <label class="label">Skills</label>
             <div class="control">
-                <input class="input" type="tags" placeholder="Add Tag" v-model="course.skills">
+                <input-tag v-model="course.skills" limit="10" placeholder="Add skills"></input-tag>
             </div>
-        </div>
+        </div>        
 
         <div class="field">
             <label class="label">Title</label>
@@ -35,7 +37,8 @@ Vue.component('campaign-formset', {
         </div>
         
         </div>
-        </div>`
+        </div>
+`
 });
 
 Vue.component('campaign', {
@@ -65,9 +68,6 @@ Vue.component('campaign', {
                 }
             ]
         }
-    },
-    mounted() {
-        bulmaTagsinput.attach();
     },
     methods: {
         fetchCourses() {
