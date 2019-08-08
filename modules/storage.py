@@ -161,6 +161,22 @@ class DataStorage:
                     i['logo'] = s['logo']
                     i['site'] = s['site']
 
+    def get_ads_by_skill(self, skill=None, limit=0):
+        if skill:
+            pipeline = [
+                {"$unwind": "$skills"},
+                {"$match": {"skills": {"$regex": skill, "$options": "gi"}}}
+            ]
+
+            if limit > 0:
+                pipeline.append(
+                    {"$limit": limit}
+                )
+
+            collection = self.db[ADS_COL]
+            ads = list(collection.aggregate(pipeline))
+            return ads
+
 
 class SalaryVacancyIterator(Iterator):
     _position: int = None

@@ -45,7 +45,7 @@ Vue.component('campaign', {
     data: function () {
         return {
             forms: [],
-            saved: false
+            saved: true
         }
     },
     mounted() {

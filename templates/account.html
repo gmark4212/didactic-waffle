@@ -5,15 +5,19 @@
 
 <div class="section" id="account_spa">
 
+    (% if current_user.active %)
     <div class="columns is-multiline">
         <left-side-menu @menu-selected="onMenuSelect"></left-side-menu>
-
         <main class="column">
             <dashboard v-if="selected_menu == 0"></dashboard>
             <campaign v-else-if="selected_menu == 1"></campaign>
         </main>
-
     </div>
+    (% else %)
+    <div class="notification">
+        To activate your account, confirm your email by clicking on the link sent to (( current_user.email ))
+    </div>
+    (% endif %)
 
 </div>
 
