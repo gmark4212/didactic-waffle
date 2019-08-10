@@ -16,21 +16,7 @@ const grades = new Vue({
         detailedOnly: function () {
             let data = this.skills.data;
             if (data) {
-                data = data.filter(function (item) {
-                    return 'desc' in item;
-                });
-                return data;
-            }
-        },
-        sideBlockAds: function () {
-            let data = this.skills.data;
-            if (data) {
-                data = data.filter(function (item) {
-                    return item.ads;
-                });
-                data = data.slice(0, 2);
-                data = data[0]['ads'];
-                return {0: data[0]['campaign'], 1: data[1]['campaign']};
+                return data.filter(item => 'desc' in item) ;
             }
         }
     },
@@ -60,10 +46,13 @@ const grades = new Vue({
                     .filter(item => item.ads && item.ads.length > 0)
                     .map(item => item.ads);
                 if (data) {
+                    // right side ads
                     this.ads_side = {
                         'first': typeof data[0][0] === 'undefined' ? false : data[0][0]['campaign'],
                         'second': typeof data[0][1] === 'undefined' ? false : data[0][1]['campaign']
                     };
+                //    TODO: Add grade ads
+                //    TODO: Add card ads
                 }
             }
         }
