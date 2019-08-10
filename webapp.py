@@ -219,7 +219,7 @@ def campaign():
 @login_required
 def fetch_campaign():
     if request.method == 'POST':
-        if not request.json:
+        if not request.json or not current_user.active:
             abort(400)
         query = request.get_json()
         if query.get('request', None) == 'campaign':
@@ -234,7 +234,7 @@ def fetch_campaign():
 @login_required
 def save_campaign():
     if request.method == 'POST':
-        if not request.json:
+        if not request.json or not current_user.active:
             abort(400)
         db.delete_docs(_filter={'email': current_user.email}, collection_name=ADS_COL)
         db.add_doc(collection_name=ADS_COL, data={'email': current_user.email, 'campaign': request.json})

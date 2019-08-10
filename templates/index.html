@@ -65,10 +65,14 @@
             </div>
 
             <div class="column">
-                <ads-card title="TensorFlow in Practice"
-                          desc="Discover the tools software developers use to build scalable AI-powered algorithms in TensorFlow, a popular open-source machine learning framework."></ads-card>
-                <ads-card title="AWS Fundamentals: Going Cloud-Native"
-                          desc="This course will introduce you to Amazon Web Services (AWS) core services and infrastructure. Through demonstrations you'll learn how to use and configure AWS services to deploy and host a cloud-native application."></ads-card>
+                <ads-card :title="ads_side.first.title"
+                          :desc="ads_side.first.description"
+                          :url="ads_side.first.url">
+                </ads-card>
+                <ads-card :title="ads_side.second.title"
+                          :desc="ads_side.second.description"
+                          :url="ads_side.second.url">
+                </ads-card>
             </div>
 
         </div>

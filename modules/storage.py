@@ -152,6 +152,7 @@ class DataStorage:
 
     def get_skill_details(self, top_skills):
         for i in top_skills['data']:
+            i['ads'] = self.get_ads_by_skill(i['_id'])
             s = self.get_docs(SKILLS_REF, _filter={'low': i['_id'].lower()}, limit=1)
             if s:
                 s = s[0]
@@ -164,8 +165,10 @@ class DataStorage:
     def get_ads_by_skill(self, skill=None, limit=0):
         if skill:
             pipeline = [
-                {"$unwind": "$skills"},
-                {"$match": {"skills": {"$regex": skill, "$options": "gi"}}}
+                {"$unwind": "$campaign"},
+                {"$unwind": "$campaign.skills"},
+                {"$match": {"campaign.skills": {"$regex": skill, "$options": "gi"}}},
+                {"$project": {"_id": 0, "campaign": 1}}
             ]
 
             if limit > 0:
@@ -176,6 +179,7 @@ class DataStorage:
             collection = self.db[ADS_COL]
             ads = list(collection.aggregate(pipeline))
             return ads
+        return None
 
 
 class SalaryVacancyIterator(Iterator):

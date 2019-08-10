@@ -59,11 +59,11 @@ Vue.component('pie-chart', {
 });
 
 Vue.component('ads-card', {
-    props: ['title', 'desc'],
+    props: ['title', 'desc', 'url'],
     template: '    <div class="notification is-light">\n' +
         '            <p><h1 class="title is-6">{{ title }}</h1></p>\n' +
         '            <p>{{ desc }}</p>\n' +
-        '            <br><p><a href=# class="button is-success">Explore</a></p>\n' +
+        '            <br><p><a :href="`${url}`" class="button is-success" target="_blank">Learn</a></p>\n' +
         '        </div>'
 
 

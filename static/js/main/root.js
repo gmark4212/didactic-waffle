@@ -6,6 +6,7 @@ const grades = new Vue({
             skills: [],
             labels: [],
             freqs: [],
+            ads_side: {},
             fetching: false,
             api_visible: false,
             about_visible: false,
@@ -20,6 +21,17 @@ const grades = new Vue({
                     });
                     return data;
                 }
+            },
+            sideBlockAds: function () {
+                let data = this.skills.data;
+                if (data) {
+                    data = data.filter(function (item) {
+                        return item.ads;
+                    });
+                    data = data.slice(0,2);
+                    data = data[0]['ads'];
+                    return {0: data[0]['campaign'], 1: data[1]['campaign']};
+                }
             }
         },
         methods: {
@@ -33,16 +45,28 @@ const grades = new Vue({
                         this.freqs = data.data.freqs;
                         this.fetching = false;
                         console.log(this.skills);
+                        this.sortAds();
                     })
                     .catch(function (err) {
                         this.skills = [];
                         console.log('Fetch Error :-S', err);
                         this.fetching = false;
                     })
-            }
+            },
+            sortAds() {
+                let data = this.skills.data;
+                if (data) {
+                    data = data.filter(function (item) {
+                        return item.ads;
+                    });
+                    data = data.slice(0, 2);
+                    data = data[0]['ads'];
+                    this.ads_side = {'first': data[0]['campaign'], 'second': data[1]['campaign']};
+                    console.log(this.ads_side);
+                }
         }
 
-    })
-;
+    }
+});
 
 grades.fetchSkills();
