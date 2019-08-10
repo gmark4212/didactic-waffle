@@ -59,12 +59,17 @@ const grades = new Vue({
                     data = data.filter(function (item) {
                         return item.ads;
                     });
-                    data = data.slice(0, 2);
-                    data = data[0]['ads'];
-                    this.ads_side = {'first': data[0]['campaign'], 'second': data[1]['campaign']};
-                    console.log(this.ads_side);
+                    if (data) {
+                        data = data.slice(0, 2);
+                        data = data[0]['ads'];
+                        this.ads_side = {
+                            'first': typeof data[0] === 'undefined' ? false : data[0]['campaign'],
+                            'second': typeof data[1] === 'undefined' ? false : data[1]['campaign']
+                        };
+                        console.log(this.ads_side);
+                    }
                 }
-        }
+            }
 
     }
 });

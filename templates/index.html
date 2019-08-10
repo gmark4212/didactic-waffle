@@ -65,14 +65,26 @@
             </div>
 
             <div class="column">
-                <ads-card :title="ads_side.first.title"
-                          :desc="ads_side.first.description"
+                <ads-card v-if="ads_side.first" :title="ads_side.first.title" :desc="ads_side.first.description"
                           :url="ads_side.first.url">
                 </ads-card>
-                <ads-card :title="ads_side.second.title"
-                          :desc="ads_side.second.description"
+                <ads-card v-else
+                          title="Build a Blockchain and a Cryptocurrency from Scratch"
+                          desc="Build a blockchain and cryptocurrency. Discover the engineering ideas behind technologies
+                          like Bitcoin and Ethereum!"
+                          url="https://www.udemy.com/build-blockchain/">
+                </ads-card>
+
+                <ads-card v-if="ads_side.second" :title="ads_side.second.title" :desc="ads_side.second.description"
                           :url="ads_side.second.url">
                 </ads-card>
+                <ads-card v-else
+                          title="Artificial Intelligence A-Z™: Learn How To Build An AI"
+                          desc="Combine the power of Data Science, Machine Learning and Deep Learning to create
+                          powerful AI for Real-World applications!"
+                          url="https://www.udemy.com/artificial-intelligence-az/">
+                </ads-card>
+
             </div>
 
         </div>
@@ -148,8 +160,8 @@
 (% endblock %)
 
 (% block extra_js %)
-    <script src="static/js/lib/Chart.min.js"></script>
-    <script src="static/js/lib/vue-chartjs.min.js"></script>
-    <script src="/static/js/main/root.js"></script>
-    <script src="/static/js/main/comps.js"></script>
+<script src="static/js/lib/Chart.min.js"></script>
+<script src="static/js/lib/vue-chartjs.min.js"></script>
+<script src="/static/js/main/root.js"></script>
+<script src="/static/js/main/comps.js"></script>
 (% endblock %)
