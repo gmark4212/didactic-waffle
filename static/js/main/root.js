@@ -56,17 +56,14 @@ const grades = new Vue({
         sortAds() {
             let data = this.skills.data;
             if (data) {
-                data = data.filter(function (item) {
-                    return item.ads;
-                });
+                data = data
+                    .filter(item => item.ads && item.ads.length > 0)
+                    .map(item => item.ads);
                 if (data) {
-                    data = data.slice(0, 2);
-                    data = data[0]['ads'];
                     this.ads_side = {
-                        'first': typeof data[0] === 'undefined' ? false : data[0]['campaign'],
-                        'second': typeof data[1] === 'undefined' ? false : data[1]['campaign']
+                        'first': typeof data[0][0] === 'undefined' ? false : data[0][0]['campaign'],
+                        'second': typeof data[0][1] === 'undefined' ? false : data[0][1]['campaign']
                     };
-                    console.log(this.ads_side);
                 }
             }
         }
