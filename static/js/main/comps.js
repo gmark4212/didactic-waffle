@@ -60,9 +60,17 @@ Vue.component('pie-chart', {
 
 Vue.component('ads-card', {
     props: ['title', 'desc', 'url'],
+    filters: {
+        truncate: function (value, limit) {
+            if (value.length > limit) {
+                value = value.substring(0, (limit - 3)) + '...';
+            }
+            return value
+        }
+    },
     template: '    <div class="notification is-light">\n' +
         '            <p><h1 class="title is-6">{{ title }}</h1></p>\n' +
-        '            <p>{{ desc|truncate(200) }}</p>\n' +
+        '            <p>{{ desc|truncate(400) }}</p>\n' +
         '            <br><p><a :href="`${url}`" class="button is-success" target="_blank">Learn</a></p>\n' +
         '        </div>'
 
