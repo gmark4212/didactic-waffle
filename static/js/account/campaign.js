@@ -9,18 +9,18 @@ Vue.component('campaign-formset', {
         <button class="delete is-pulled-right" @click="$emit('deleted', course.id)"></button>
         
         <div class="field">
-            <label class="label">Skills</label>
-            <div class="control">
-                <input-tag v-model="course.skills" limit="10" placeholder="Add skills"></input-tag>
-            </div>
-        </div>        
-
-        <div class="field">
             <label class="label">Title</label>
             <div class="control">
                 <input class="input" type="text" placeholder="Best programming course ever" v-model="course.title">
             </div>
         </div>
+        
+        <div class="field">
+            <label class="label">Skills</label>
+            <div class="control">
+                <input-tag v-model="course.skills" limit="10" placeholder="Add skills"></input-tag>
+            </div>
+        </div>        
 
         <div class="field">
             <label class="label">URL</label>
