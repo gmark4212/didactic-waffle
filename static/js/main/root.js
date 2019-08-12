@@ -7,6 +7,7 @@ const grades = new Vue({
         labels: [],
         freqs: [],
         ads_side: {},
+        ads_grade: {},
         fetching: false,
         api_visible: false,
         about_visible: false,
@@ -39,6 +40,9 @@ const grades = new Vue({
                     this.fetching = false;
                 })
         },
+        getGradeAdUrlBySkill(skill) {
+            return this.ads_grade[skill.toLowerCase()];
+        },
         sortAds() {
             let data = this.skills.data;
             if (data) {
@@ -46,12 +50,28 @@ const grades = new Vue({
                     .filter(item => item.ads && item.ads.length > 0)
                     .map(item => item.ads);
                 if (data) {
+                    console.log(data);
                     // right side ads
                     this.ads_side = {
                         'first': typeof data[0][0] === 'undefined' ? false : data[0][0]['campaign'],
                         'second': typeof data[0][1] === 'undefined' ? false : data[0][1]['campaign']
                     };
-                //    TODO: Add grade ads
+                    // grade ads
+                    let ads_grade = {};
+                    data.forEach(function (row, row_index) {
+                        row.forEach(function (item, item_index) {
+                            if ((row_index === 0) && (item_index === 0 || item_index === 1)) {
+                                return;
+                            }
+                            camp = item.campaign;
+                            if (camp.url && camp.skills) {
+                                ads_grade[camp.skills.toLowerCase()] = camp.url;
+                            }
+                        });
+                    });
+                     this.ads_grade = ads_grade;
+                     console.log(this.ads_grade);
+
                 //    TODO: Add card ads
                 }
             }

@@ -44,6 +44,11 @@
                         &nbsp;<a @click.stop.prevent="value.visible = !value.visible">{{ value.frequency }}
                         jobs</a>
 
+                        <span v-if="getGradeAdUrlBySkill(value._id)">
+                            &nbsp;<a :href="`${ getGradeAdUrlBySkill(value._id) }`" target="_blank" title="Learn">
+                            <i class="fas fa-graduation-cap"></i></a>
+                        </span>
+
                         <div v-show="value.visible" style="margin-left: 3em;">
                             <ul>
                                 <li v-for="vac in value.vacs">
