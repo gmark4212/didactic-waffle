@@ -18,7 +18,7 @@ Vue.component('campaign-formset', {
         <div class="field">
             <label class="label">Skills</label>
             <div class="control">
-                <input-tag v-model="course.skills" limit="10" placeholder="Add skills"></input-tag>
+                <input-tag v-model="course.skills" limit="5" placeholder="Add skills"></input-tag>
             </div>
         </div>        
 
