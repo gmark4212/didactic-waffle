@@ -77,6 +77,13 @@ Vue.component('ads-card', {
 
 Vue.component('skill-card', {
     props: ['skill'],
+    methods: {
+        getCardAd: function (skill) {
+            let max = skill.ads.length;
+            let random = Math.floor(Math.random() * (+max - +0)) + +0;
+            return typeof skill.ads[random] === 'undefined' ? false : skill.ads[random].campaign.url;
+        }
+    },
     template: '<div class="card">\n' +
         '  <div class="card-content">\n' +
         '    <div class="media">\n' +
@@ -93,7 +100,7 @@ Vue.component('skill-card', {
         '    <div class="content">\n' +
         '      {{ skill.desc }}\n' +
         '      <br>\n' +
-        '      <a href="">Learn</a>\n' +
+        '      <span v-if="getCardAd(skill)"><a :href="`${getCardAd(skill)}`" target="_blank">Learn</a></span>\n' +
         '    </div>\n' +
         '  </div>\n' +
         '</div>'

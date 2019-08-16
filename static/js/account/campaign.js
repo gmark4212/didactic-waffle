@@ -115,9 +115,7 @@ Vue.component('campaign', {
     },
     template: `<div>
     <div class="title">Campaign</div>
-    
     <form @submit.prevent="campaignSubmit">
-    
         <div class="columns is-multiline">
             <campaign-formset 
             v-for="(course, index)  in forms" @deleted="delCourse" 
@@ -125,7 +123,6 @@ Vue.component('campaign', {
             :key="course.id"
             ></campaign-formset>
         </div>
-
          <div class="field is-grouped">
             <div class="control">
                 <button class="button is-primary" @click="addCourse">
@@ -137,7 +134,6 @@ Vue.component('campaign', {
                 </button>
             </div>
         </div>
-        
     </form> 
 </div>`
 });

@@ -69,10 +69,7 @@ const grades = new Vue({
                             }
                         });
                     });
-                     this.ads_grade = ads_grade;
-                     console.log(this.ads_grade);
-
-                //    TODO: Add card ads
+                    this.ads_grade = ads_grade;
                 }
             }
         }
