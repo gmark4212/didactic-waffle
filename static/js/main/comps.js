@@ -79,8 +79,7 @@ Vue.component('skill-card', {
     props: ['skill'],
     methods: {
         getCardAd: function (skill) {
-            let max = skill.ads.length;
-            let random = Math.floor(Math.random() * (+max - +0)) + +0;
+            let random = Math.floor(Math.random() * skill.ads.length);
             return typeof skill.ads[random] === 'undefined' ? false : skill.ads[random].campaign.url;
         }
     },
