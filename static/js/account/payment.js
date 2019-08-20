@@ -52,7 +52,7 @@ Vue.component('payment', {
 <div class="notification is-danger" v-if="displayError">
     {{ displayError }}
 </div>
-
+{{ customer }}
 <div class="pricing-table">
 
   <div class="pricing-plan is-primary">

@@ -11,6 +11,7 @@ from modules.settings import VACS_LIMIT, AUTH_COL, CONFIRM_SEC_TO_EXPIRE, SITE_U
 from modules._sensitive import SECRET, EMAIL_CONFIRM_SALT, MAIL_PASSWORD
 from modules.storage import DataStorage
 from modules.auth import User
+from modules.payment import StripePay
 
 
 class CustomFlask(Flask):
@@ -47,6 +48,8 @@ login_manager.init_app(app)
 
 # MongoDb for app data
 db = DataStorage()
+# stripe payment obj
+stripe = StripePay()
 
 
 def get_user(filter_dict):
@@ -254,7 +257,13 @@ def get_customer():
 def successful_payment():
     if not current_user.active:
         abort(400)
-    return render_template('success.html')
+    email = current_user.email
+    if email:
+        stripe_id = stripe.get_customer_id(email)
+        if stripe_id:
+            db.update_doc(AUTH_COL, _filter={'email': email}, set_dict={'stripe_id': stripe_id})
+        return render_template('success.html')
+    abort(400)
 
 
 @app.route('/payment/cancel')
