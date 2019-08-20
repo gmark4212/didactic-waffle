@@ -7,12 +7,13 @@ class User:
         self.active = db_user['active']
         self.email = db_user['email']
         self.name = db_user['name']
+        self.stripe_id = db_user.get('stripe_id', '')
 
     def is_authenticated(self):
         return True
 
     def is_active(self):
-        return True
+        return self.active
 
     def is_anonymous(self):
         return False

@@ -3,7 +3,8 @@ Vue.component('payment', {
         return {
             public_key: 'pk_test_7qWc36Li8coNnbkqgXKBtpqV009cvA8sTF',
             displayError: undefined,
-            customer: undefined
+            customer: undefined,
+            result: undefined
         }
     },
     mounted() {
@@ -27,13 +28,18 @@ Vue.component('payment', {
         },
         checkout() {
             let stripe = Stripe(this.public_key);
-            stripe.redirectToCheckout({
+            let params = {
                 items: [{plan: 'plan_FeCNCWp990RaQy', quantity: 1}],
-                successUrl: 'https://skoglee.com/success',
-                cancelUrl: 'https://skoglee.com/canceled',
+                successUrl: 'https://skoglee.com/payment/success',
+                cancelUrl: 'https://skoglee.com/payment/canceled',
                 customerEmail: this.customer.email
-            })
+            };
+            if (this.customer.stripe_id) {
+                params['clientReferenceId'] = this.customer.stripe_id;
+            }
+            stripe.redirectToCheckout(params)
                 .then(function (result) {
+                    this.result = result;
                         if (result.error) {
                             this.displayError = result.error.message;
                         }
@@ -46,6 +52,9 @@ Vue.component('payment', {
 <div class="notification is-danger" v-if="displayError">
     {{ displayError }}
 </div>
+
+<p>{{ result }}</p>
+<p>{{ customer }}</p>
 
 <div class="pricing-table">
 

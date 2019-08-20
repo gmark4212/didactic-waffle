@@ -241,11 +241,15 @@ def get_customer():
     if request.method == 'GET':
         if not current_user.active:
             abort(400)
-        return jsonify(dict(name=current_user.name, email=current_user.email))
+        return jsonify({
+            'name': current_user.name,
+            'email': current_user.email,
+            'stripe_id': current_user.stripe_id
+        })
     abort(400)
 
 
-@app.route('/success')
+@app.route('/payment/success')
 @login_required
 def successful_payment():
     if not current_user.active:
@@ -253,7 +257,7 @@ def successful_payment():
     return render_template('success.html')
 
 
-@app.route('/cancel')
+@app.route('/payment/cancel')
 @login_required
 def cancelled_payment():
     if not current_user.active:
