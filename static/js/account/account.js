@@ -34,7 +34,7 @@ Vue.component('left-side-menu', {
         '        </p>\n' +
         '        <ul class="menu-list">\n' +
         '            <li><a href="#" :class="{\'is-active\':menu[3]}" @click="selectItem(3)">Payments</a></li>\n' +
-        '            <li><a href="#" :class="{\'is-active\':menu[4]}" @click="selectItem(4)">Balance</a></li>\n' +
+        '            <li><a href="#" :class="{\'is-active\':menu[4]}" @click="selectItem(4)">History</a></li>\n' +
         '        </ul>\n' +
         '      </nav>\n' +
         '</aside>'

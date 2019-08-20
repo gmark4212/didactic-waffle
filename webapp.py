@@ -209,12 +209,6 @@ def srv_error(e):
     return render_template('500.html'), 500
 
 
-@app.route('/account/campaign')
-@login_required
-def campaign():
-    return render_template('campaign.html')
-
-
 @app.route("/campaign/fetch", methods=['POST'])
 @login_required
 def fetch_campaign():
@@ -239,6 +233,32 @@ def save_campaign():
         db.delete_docs(_filter={'email': current_user.email}, collection_name=ADS_COL)
         db.add_doc(collection_name=ADS_COL, data={'email': current_user.email, 'campaign': request.json})
         return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
+
+
+@app.route("/account/customer/", methods=['GET'])
+@login_required
+def get_customer():
+    if request.method == 'GET':
+        if not current_user.active:
+            abort(400)
+        return jsonify(dict(name=current_user.name, email=current_user.email))
+    abort(400)
+
+
+@app.route('/success')
+@login_required
+def successful_payment():
+    if not current_user.active:
+        abort(400)
+    return render_template('success.html')
+
+
+@app.route('/cancel')
+@login_required
+def cancelled_payment():
+    if not current_user.active:
+        abort(400)
+    return render_template('cancel.html')
 
 
 if __name__ == '__main__':

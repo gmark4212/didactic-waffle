@@ -11,6 +11,7 @@
         <main class="column">
             <dashboard v-if="selected_menu == 0"></dashboard>
             <campaign v-else-if="selected_menu == 1"></campaign>
+            <payment v-else-if="selected_menu == 3"></payment>
         </main>
     </div>
     (% else %)
@@ -24,8 +25,12 @@
 (% endblock %)
 
 (% block extra_js %)
+<link rel="stylesheet" href="/static/css/bulma-pricingtable.min.css">
 <script src="https://unpkg.com/vue-input-tag"></script>
 <script src="/static/js/account/dashboard.js"></script>
 <script src="/static/js/account/campaign.js"></script>
 <script src="/static/js/account/account.js"></script>
+<script src="https://js.stripe.com/v3"></script>
+<script src="/static/js/account/payment.js"></script>
+<script defer src="/static/js/account/stripe.js"></script>
 (% endblock %)

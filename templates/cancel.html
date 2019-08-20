@@ -1,0 +1,21 @@
+(% extends "base.html" %)
+(% block content %)
+
+<div class="hero-head">
+    (% include 'includes/inc_board_navbar.html' %)
+</div>
+<section class="hero is-fullheight">
+    <div class="hero-body">
+        <div class="container has-text-centered">
+            <h2 class="title is-2">Payment cancelled. Try later again</h2>
+            <p>
+                (% if current_user.is_authenticated %)
+                <a class="button is-success" href="/account">
+                    Back to account
+                </a>
+                (% endif %)
+            </p>
+        </div>
+    </div>
+</section>
+(% endblock %)
