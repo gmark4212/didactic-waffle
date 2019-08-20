@@ -53,9 +53,6 @@ Vue.component('payment', {
     {{ displayError }}
 </div>
 
-<p>{{ result }}</p>
-<p>{{ customer }}</p>
-
 <div class="pricing-table">
 
   <div class="pricing-plan is-primary">
