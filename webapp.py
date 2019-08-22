@@ -259,10 +259,12 @@ def successful_payment():
         abort(400)
     email = current_user.email
     if email:
-        stripe_id = stripe.get_customer_id(email)
-        if stripe_id:
-            db.update_doc(AUTH_COL, _filter={'email': email}, set_dict={'stripe_id': stripe_id})
-        return render_template('success.html')
+        customer_ids = stripe.get_customer_ids(email, limit=1)
+        if customer_ids:
+            stripe_id = customer_ids[0]
+            if stripe_id:
+                db.update_doc(AUTH_COL, _filter={'email': email}, set_dict={'stripe_id': stripe_id})
+            return render_template('success.html')
     abort(400)
 
 
@@ -272,6 +274,30 @@ def cancelled_payment():
     if not current_user.active:
         abort(400)
     return render_template('cancel.html')
+
+
+@app.route("/account/payment/history/", methods=['GET'])
+@login_required
+def get_payment_history():
+    if request.method == 'GET':
+        if not current_user.active:
+            abort(400)
+        charges = stripe.get_history(current_user.email, limit=100)
+        return jsonify(charges)
+    abort(400)
+
+
+@app.route("/account/payment/ispaid/", methods=['GET'])
+@login_required
+def is_campaign_paid():
+    if request.method == 'GET':
+        if not current_user.active:
+            abort(400)
+        last_payment = stripe.is_current_campaign_paid(current_user.email)
+        return jsonify({
+            'campaign_is_paid': last_payment['paid']
+        })
+    abort(400)
 
 
 if __name__ == '__main__':

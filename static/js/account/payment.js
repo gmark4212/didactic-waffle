@@ -28,15 +28,15 @@ Vue.component('payment', {
         },
         checkout() {
             let stripe = Stripe(this.public_key);
+            alert(this.customer.stripe_id);
             let params = {
                 items: [{plan: 'plan_FeCNCWp990RaQy', quantity: 1}],
                 successUrl: 'https://skoglee.com/payment/success',
                 cancelUrl: 'https://skoglee.com/payment/canceled',
-                customerEmail: this.customer.email
+                customerEmail: this.customer.email,
+                clientReferenceId: this.customer.stripe_id
             };
-            if (this.customer.stripe_id) {
-                params['clientReferenceId'] = this.customer.stripe_id;
-            }
+
             stripe.redirectToCheckout(params)
                 .then(function (result) {
                     this.result = result;
