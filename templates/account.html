@@ -12,6 +12,7 @@
             <dashboard v-if="selected_menu == 0"></dashboard>
             <campaign v-else-if="selected_menu == 1"></campaign>
             <payment v-else-if="selected_menu == 3"></payment>
+            <history v-else-if="selected_menu == 4"></history>
         </main>
     </div>
     (% else %)
@@ -32,5 +33,5 @@
 <script src="/static/js/account/account.js"></script>
 <script src="https://js.stripe.com/v3"></script>
 <script src="/static/js/account/payment.js"></script>
-<script defer src="/static/js/account/stripe.js"></script>
+<script src="/static/js/account/history.js"></script>
 (% endblock %)
