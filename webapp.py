@@ -234,7 +234,11 @@ def save_campaign():
         if not request.json or not current_user.active:
             abort(400)
         db.delete_docs(_filter={'email': current_user.email}, collection_name=ADS_COL)
-        db.add_doc(collection_name=ADS_COL, data={'email': current_user.email, 'campaign': request.json})
+        db.add_doc(collection_name=ADS_COL, data={
+            'email': current_user.email,
+            'campaign': request.json,
+            'paid': campaign_is_paid()
+        })
         return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
 
 
@@ -244,15 +248,18 @@ def get_customer():
     if request.method == 'GET':
         if not current_user.active:
             abort(400)
-        last_payment = stripe.is_current_campaign_paid(current_user.email)
-        print(last_payment)
         return jsonify({
             'name': current_user.name,
             'email': current_user.email,
             'stripe_id': current_user.stripe_id,
-            'paid': last_payment['campaign_is_paid']
+            'paid': campaign_is_paid()
         })
     abort(400)
+
+
+def campaign_is_paid():
+    last_payment = stripe.is_current_campaign_paid(current_user.email)
+    return last_payment['campaign_is_paid']
 
 
 @app.route('/payment/success')

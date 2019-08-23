@@ -165,6 +165,7 @@ class DataStorage:
     def get_ads_by_skill(self, skill=None, limit=0):
         if skill:
             pipeline = [
+                {"$match": {"paid": True}},
                 {"$unwind": "$campaign"},
                 {"$unwind": "$campaign.skills"},
                 {"$match": {"campaign.skills": {"$regex": skill, "$options": "gi"}}},
