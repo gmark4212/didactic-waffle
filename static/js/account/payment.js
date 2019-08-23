@@ -55,7 +55,7 @@ Vue.component('payment', {
 
 <div class="pricing-table">
 
-  <div class="pricing-plan is-primary">
+  <div class="pricing-plan is-primary is-active">
     <div class="plan-header">Starter</div>
     <div class="plan-price"><span class="plan-price-amount"><span class="plan-price-currency">$</span>5</span>/month</div>
     <div class="plan-items">
@@ -65,7 +65,8 @@ Vue.component('payment', {
       <div class="plan-item">-</div>
     </div>
     <div class="plan-footer">
-      <button class="button is-primary is-fullwidth" @click="checkout">Pay per month</button>
+        <div v-if="customer.paid"><strong>Active plan</strong></div>
+        <button class="button is-primary is-fullwidth" @click="checkout" v-else>Pay per month</button>
     </div>
   </div>
 

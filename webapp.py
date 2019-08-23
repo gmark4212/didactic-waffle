@@ -244,10 +244,13 @@ def get_customer():
     if request.method == 'GET':
         if not current_user.active:
             abort(400)
+        last_payment = stripe.is_current_campaign_paid(current_user.email)
+        print(last_payment)
         return jsonify({
             'name': current_user.name,
             'email': current_user.email,
-            'stripe_id': current_user.stripe_id
+            'stripe_id': current_user.stripe_id,
+            'paid': last_payment['campaign_is_paid']
         })
     abort(400)
 
@@ -284,19 +287,6 @@ def get_payment_history():
             abort(400)
         charges = stripe.get_history(current_user.email, limit=100)
         return jsonify(charges)
-    abort(400)
-
-
-@app.route("/account/payment/ispaid/", methods=['GET'])
-@login_required
-def is_campaign_paid():
-    if request.method == 'GET':
-        if not current_user.active:
-            abort(400)
-        last_payment = stripe.is_current_campaign_paid(current_user.email)
-        return jsonify({
-            'campaign_is_paid': last_payment['paid']
-        })
     abort(400)
 
 

@@ -25,7 +25,7 @@ Vue.component('history', {
         },
 
     },
-    template: `<div>
+    template: `<div class="container">
     <table class="table" v-if="history.length">
         <thead>
         <tr>
