@@ -274,6 +274,7 @@ def successful_payment():
             stripe_id = customer_ids[0]
             if stripe_id:
                 db.update_doc(AUTH_COL, _filter={'email': email}, set_dict={'stripe_id': stripe_id})
+                db.update_doc(ADS_COL, _filter={'email': email}, set_dict={'paid': campaign_is_paid()})
             return render_template('success.html')
     abort(400)
 
