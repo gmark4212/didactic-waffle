@@ -28,7 +28,6 @@ Vue.component('payment', {
         },
         checkout() {
             let stripe = Stripe(this.public_key);
-            alert(this.customer.stripe_id);
             let params = {
                 items: [{plan: 'plan_FeCNCWp990RaQy', quantity: 1}],
                 successUrl: 'https://skoglee.com/payment/success',
