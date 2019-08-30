@@ -11,6 +11,7 @@
         <main class="column">
             <dashboard v-if="selected_menu == 0"></dashboard>
             <campaign v-else-if="selected_menu == 1"></campaign>
+            <settings v-else-if="selected_menu == 2"></settings>
             <payment v-else-if="selected_menu == 3"></payment>
             <history v-else-if="selected_menu == 4"></history>
         </main>
@@ -31,6 +32,7 @@
 <script src="/static/js/account/dashboard.js"></script>
 <script src="/static/js/account/campaign.js"></script>
 <script src="/static/js/account/account.js"></script>
+<script src="/static/js/account/settings.js"></script>
 <script src="https://js.stripe.com/v3"></script>
 <script src="/static/js/account/payment.js"></script>
 <script src="/static/js/account/history.js"></script>

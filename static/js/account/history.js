@@ -9,6 +9,7 @@ Vue.component('history', {
     },
     methods: {
         fetchHistory() {
+            this.history = false;
             fetch('/account/payment/history/', {
                 method: "get",
                 headers: {
@@ -18,6 +19,7 @@ Vue.component('history', {
             })
                 .then(response => response.json())
                 .then(data => {
+                    this.history = [];
                     if (data) {
                         this.history = data;
                     }
@@ -44,8 +46,11 @@ Vue.component('history', {
         </tr>
         </tbody>
     </table>
-    <div v-else>
+    <div v-else-if="history === false">
         <progress class="progress is-small is-info" max="100">60%</progress>
+    </div>
+    <div v-else>
+        <div class="notification is-light">No payment history</div>
     </div>
 </div>`
 });
