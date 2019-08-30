@@ -47,7 +47,7 @@ Vue.component('history', {
         </tbody>
     </table>
     <div v-else-if="history === false">
-        <progress class="progress is-small is-info" max="100">60%</progress>
+        <i class="fas fa-spinner fa-pulse fa-lg"></i>
     </div>
     <div v-else>
         <div class="notification is-light">No payment history</div>
