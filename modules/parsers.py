@@ -10,9 +10,29 @@ from modules.extractor import Extractor
 
 
 class BaseParser(ABC):
+    """Base class for API-parsers. Make a separate class for html-parsers.
+
+    Attributes:
+        id: parser instance identifier
+    """
+
     id = None
 
     def __init__(self):
+        """
+        Attributes:
+        api_root: str
+            stores initial API url
+        fields: dict
+            matching fields in the API structure and our data-view
+        db: DataStorage
+            pointer to an instance of the class responsible for storing data
+        extractor: Extractor
+            pointer to an instance of the class responsible for extracting data from text
+        headers: dict
+            default http header data
+        """
+
         self.api_root = None
         self.fields = None
         self.db = DataStorage()
@@ -23,13 +43,27 @@ class BaseParser(ABC):
 
     @abstractmethod
     def fetch_vacancies_portion(self, page_num):
+        """Get one job page from API by number."""
+
         pass
 
     @staticmethod
     def get_field_from_nested_dict(data_dict, map_tuple):
+        """Gets a field from a nested dictionary."""
+
         return reduce(operator.getitem, map_tuple, data_dict)
 
     def get_ids(self, params, ids_root, str_get_params=''):
+        """Returns a tuple of unique vacancy identifiers.
+        Parameters:
+            params: dict
+                GET request parameter dictionary
+            ids_root: str
+                name of the parent element within which to find
+            str_get_params: str
+                GET string parameters (optional)
+        """
+
         ids = ()
         response = requests.get(url=self.api_root + str_get_params, params=params, headers=self.headers)
         if response.status_code == 200:
@@ -37,6 +71,11 @@ class BaseParser(ABC):
         return ids
 
     def get_vacs_by_ids(self, ids=None):
+        """Returns tuple of vacancies with specified identifiers.
+        Parameters:
+            ids: tuple
+                кортеж идентификаторов вакансий, которые нужно получить
+        """
         vacs = []
         if ids:
             for vac_id in ids:
@@ -47,6 +86,13 @@ class BaseParser(ABC):
         return tuple(vacs)
 
     def get_vacs_by_root(self, params, data_map=None):
+        """Returns tuple of vacancies.
+        Parameters:
+            params: dict
+                dictionary with request parameters
+            data_map: tuple
+                path to vacancies list inside JSON
+        """
         vacs = []
         response = requests.get(self.api_root, params=params, headers=self.headers)
         data = response.json()
@@ -58,6 +104,11 @@ class BaseParser(ABC):
         return tuple(vacs)
 
     def process_vacancies(self, vacs):
+        """Processes tuple with vacancies objects.
+        Parameters:
+            vacs: tuple
+                vacancies returned by API
+        """
         if vacs:
             fields = self.fields
             for vacancy in vacs:
@@ -94,6 +145,10 @@ class BaseParser(ABC):
 
 
 class HhParser(BaseParser):
+    """ Hh.ru API-parser implementation.
+
+    Inherits the base class BaseParser"""
+
     id = 'hh'
 
     def __init__(self):
@@ -123,6 +178,10 @@ class HhParser(BaseParser):
 
 
 class GitHubParser(BaseParser):
+    """GitHub Jobs API-parser implementation.
+
+    Inherits the base class BaseParser"""
+
     id = 'gh'
 
     def __init__(self):
@@ -145,6 +204,10 @@ class GitHubParser(BaseParser):
 
 
 class AuthenticJobsParser(BaseParser):
+    """Authentic Jobs API-parser implementation.
+
+    Inherits the base class BaseParser"""
+
     id = 'aj'
 
     def __init__(self):
@@ -171,6 +234,10 @@ class AuthenticJobsParser(BaseParser):
 
 
 class TheMuseParser(BaseParser):
+    """TheMuse API-parser implementation.
+
+    Inherits the base class BaseParser"""
+
     id = 'ms'
 
     def __init__(self):
@@ -195,6 +262,13 @@ class TheMuseParser(BaseParser):
 
 
 class ParserFabric:
+    """Parser factory. Generates an instance of the parser of the required type.
+
+    Attributes:
+        parsers: dict
+            matching parser identifiers and their classes for convenient generation
+    """
+
     def __init__(self):
         self.parsers = {
             HhParser.id: HhParser,
@@ -205,9 +279,11 @@ class ParserFabric:
 
     @property
     def parsers_ids(self):
+        """Returns a tuple of all available parsers to generate"""
         return tuple(self.parsers.keys())
 
     def spawn(self, name):
+        """Generates a parser instance by its identifier"""
         return self.parsers[name]()
 
 
