@@ -8,28 +8,65 @@ from modules.settings import *
 from modules.storage import DataStorage
 from modules.extractor import Extractor
 
+from user_agent import generate_user_agent
+from bs4 import BeautifulSoup
+
 
 class BaseParser(ABC):
+    """Base class for API-parsers.
+
+    Attributes:
+        id: parser instance identifier
+    """
+
     id = None
 
     def __init__(self):
+        """
+        Attributes:
+        api_root: str
+            stores initial API url
+        fields: dict
+            matching fields in the API structure and our data-view
+        db: DataStorage
+            pointer to an instance of the class responsible for storing data
+        extractor: Extractor
+            pointer to an instance of the class responsible for extracting data from text
+        headers: dict
+            default http header data
+        """
+
         self.api_root = None
         self.fields = None
         self.db = DataStorage()
         self.extractor = Extractor(db=self.db)
         self.headers = {
-            'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 12_0 like Mac OS X) ',
+            'User-Agent': generate_user_agent()
         }
 
     @abstractmethod
     def fetch_vacancies_portion(self, page_num):
+        """Get one job page from API by number."""
+
         pass
 
     @staticmethod
     def get_field_from_nested_dict(data_dict, map_tuple):
+        """Gets a field from a nested dictionary."""
+
         return reduce(operator.getitem, map_tuple, data_dict)
 
     def get_ids(self, params, ids_root, str_get_params=''):
+        """Returns a tuple of unique vacancy identifiers.
+        Parameters:
+            params: dict
+                GET request parameter dictionary
+            ids_root: str
+                name of the parent element within which to find
+            str_get_params: str
+                GET string parameters (optional)
+        """
+
         ids = ()
         response = requests.get(url=self.api_root + str_get_params, params=params, headers=self.headers)
         if response.status_code == 200:
@@ -37,6 +74,11 @@ class BaseParser(ABC):
         return ids
 
     def get_vacs_by_ids(self, ids=None):
+        """Returns tuple of vacancies with specified identifiers.
+        Parameters:
+            ids: tuple
+                кортеж идентификаторов вакансий, которые нужно получить
+        """
         vacs = []
         if ids:
             for vac_id in ids:
@@ -47,6 +89,13 @@ class BaseParser(ABC):
         return tuple(vacs)
 
     def get_vacs_by_root(self, params, data_map=None):
+        """Returns tuple of vacancies.
+        Parameters:
+            params: dict
+                dictionary with request parameters
+            data_map: tuple
+                path to vacancies list inside JSON
+        """
         vacs = []
         response = requests.get(self.api_root, params=params, headers=self.headers)
         data = response.json()
@@ -58,6 +107,11 @@ class BaseParser(ABC):
         return tuple(vacs)
 
     def process_vacancies(self, vacs):
+        """Processes tuple with vacancies objects.
+        Parameters:
+            vacs: tuple
+                vacancies returned by API
+        """
         if vacs:
             fields = self.fields
             for vacancy in vacs:
@@ -93,7 +147,62 @@ class BaseParser(ABC):
                         self.db.add_doc(DEF_COL, document)
 
 
+class BaseHTMLParser(ABC):
+    """Base class for HTML-parsers.
+
+    Attributes:
+        id: parser instance identifier
+    """
+
+    id = None
+
+    def __init__(self):
+        """
+        Attributes:
+            url: URL
+                link to categories
+            db: DataStorage
+                pointer to an instance of the class responsible for storing data
+            extractor: Extractor
+                pointer to an instance of the class responsible for extracting data from text
+            headers: dict
+                default http header data
+        """
+        self.url = None
+        self.db = DataStorage()
+        self.extractor = Extractor(db=self.db)
+        self.headers = {
+            'User-Agent': generate_user_agent()
+        }
+
+    def parse_url(self, url):
+        """Returns soup-object for concrete url"""
+        r = requests.get(url, headers=self.headers)
+        soup = BeautifulSoup(r.text, 'html.parser')
+
+        return soup
+
+    @abstractmethod
+    def parse_categories(self):
+        """Parses category links"""
+        pass
+
+    @abstractmethod
+    def parse_vacs_of_current_category(self):
+        """Parses links to vacancy pages"""
+        pass
+
+    @abstractmethod
+    def parse_text_of_current_vac(self):
+        """Parses skills from text"""
+        pass
+
+
 class HhParser(BaseParser):
+    """ Hh.ru API-parser implementation.
+
+    Inherits the base class BaseParser"""
+
     id = 'hh'
 
     def __init__(self):
@@ -123,6 +232,10 @@ class HhParser(BaseParser):
 
 
 class GitHubParser(BaseParser):
+    """GitHub Jobs API-parser implementation.
+
+    Inherits the base class BaseParser"""
+
     id = 'gh'
 
     def __init__(self):
@@ -145,6 +258,10 @@ class GitHubParser(BaseParser):
 
 
 class AuthenticJobsParser(BaseParser):
+    """Authentic Jobs API-parser implementation.
+
+    Inherits the base class BaseParser"""
+
     id = 'aj'
 
     def __init__(self):
@@ -171,6 +288,10 @@ class AuthenticJobsParser(BaseParser):
 
 
 class TheMuseParser(BaseParser):
+    """TheMuse API-parser implementation.
+
+    Inherits the base class BaseParser"""
+
     id = 'ms'
 
     def __init__(self):
@@ -194,20 +315,115 @@ class TheMuseParser(BaseParser):
         self.process_vacancies(vacs)
 
 
+class MonsterParser(BaseHTMLParser):
+    """monster.com html-parser implementation.
+
+       Inherits the base class BaseHTMLParser"""
+
+    id = 'mr'
+
+    def __init__(self):
+        """
+        Attributes:
+            self.categories: list
+                list of links to category pages
+            self.vacs: list
+                list of links to vacancy pages
+        """
+        super().__init__()
+        self.url = 'https://www.monster.com/jobs/browse/q-computer-jobs'
+
+        self.categories = []
+        self.vacs = []
+
+        self.pattern_for_categories = r'https:\/\/www\.monster\.com\/jobs\/q.+'
+        self.pattern_for_vacs = r'https:\/\/job-openings\.monster\.com\/'
+        self.pattern_for_skills = r'(?![a-z])(?![A-Z])[\.?\-?\s?\/?\,?\(?\)?]'
+
+    def parse_categories(self):
+        soup = parse_url(self.url)
+        block_with_links = soup.findAll('ul', class_='card-columns')
+        block_with_links = block_with_links[0]
+        links = block_with_links.findAll('a')
+
+        for link in links:
+            link = link.get('href')
+            if re.search(self.pattern_for_categories, link):
+                self.categories.append(link)
+
+        self.parse_vacs_of_current_category()
+
+    def parse_vacs_of_current_category(self):
+        for category in self.categories:
+            soup = parse_url(category)
+            vac = soup.findAll(text=re.compile(self.pattern_for_vacs))
+            vac = vac[0]
+
+            for v in re.findall(self.pattern_for_vacs + r'.+', vac):
+                self.vacs.append(v[:-3])
+
+        self.parse_text_of_current_vac()
+
+    def parse_text_of_current_vac(self):
+        pattern_for_title = r'\"title\":(\"[^\"]+\")'
+        pattern_for_pub_date = r'\"datePosted\":(\"[^\"]+\")'
+        pattern_for_desc = r'\"description\":(\"[^\"]+\")'
+        pattern_for_cleaning_desc = r'(<br>|<(\/?)div>|<(\/?)h4>|<!--(START|END)_SECTION_[0-9]-->|<(\/?p>)|<(\/?)b>)'
+
+        for v in self.vacs:
+            soup = parse_url(v)
+            text = soup.findAll('script', type='application/ld+json')
+
+            key_skills = Extractor.extract_skills(str(text))
+
+            _id = soup.findAll('div', id='trackingIdentification')
+            for i in _id:
+                _id = i.get('data-job-id')
+
+            name = re.search(pattern_for_title, str(text))
+            name = name.group(1)[1:-1]
+            description = re.search(pattern_for_desc, str(text))
+            description = description.group(1)[1:-1]
+            description = re.sub(pattern_for_cleaning_desc, '', description)
+            pub_date = re.search(pattern_for_pub_date, str(text))
+            pub_date = pub_date.group(1)[1:-1]
+
+            document = {
+                '_id': _id,
+                'name': name,
+                'description': description,
+                'pub_date': pub_date,
+                'url': v,
+                'key_skills': key_skills,
+            }
+
+            self.db.add_doc(DEF_COL, document)
+
+
 class ParserFabric:
+    """Parser factory. Generates an instance of the parser of the required type.
+
+    Attributes:
+        parsers: dict
+            matching parser identifiers and their classes for convenient generation
+    """
+
     def __init__(self):
         self.parsers = {
             HhParser.id: HhParser,
             GitHubParser.id: GitHubParser,
             AuthenticJobsParser.id: AuthenticJobsParser,
             TheMuseParser.id: TheMuseParser,
+            MonsterParser.id: MonsterParser
         }
 
     @property
     def parsers_ids(self):
+        """Returns a tuple of all available parsers to generate"""
         return tuple(self.parsers.keys())
 
     def spawn(self, name):
+        """Generates a parser instance by its identifier"""
         return self.parsers[name]()
 
 
@@ -218,4 +434,5 @@ class ParserFabric:
     # print(f.spawn('aj').fetch_vacancies_portion(1))
     # print(f.spawn('gh').fetch_vacancies_portion(2))
     # print(f.spawn('ms').fetch_vacancies_portion(4))
+    # print(f.spawn('mr')).parse_categories()
 # # ----- FOR TEST USE ONLY! -----
