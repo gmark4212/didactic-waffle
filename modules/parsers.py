@@ -10,6 +10,7 @@ from modules.extractor import Extractor
 
 from user_agent import generate_user_agent
 from bs4 import BeautifulSoup
+import re
 
 
 class BaseParser(ABC):
@@ -175,9 +176,9 @@ class BaseHTMLParser(ABC):
             'User-Agent': generate_user_agent()
         }
 
-    def parse_url(self, url):
+    def parse_url(self, url, params=None):
         """Returns soup-object for concrete url"""
-        r = requests.get(url, headers=self.headers)
+        r = requests.get(url, params=params, headers=self.headers)
         soup = BeautifulSoup(r.text, 'html.parser')
 
         return soup
@@ -188,13 +189,18 @@ class BaseHTMLParser(ABC):
         pass
 
     @abstractmethod
-    def parse_vacs_of_current_category(self):
+    def parse_vacs_of_current_category(self, params):
         """Parses links to vacancy pages"""
         pass
 
     @abstractmethod
     def parse_text_of_current_vac(self):
         """Parses skills from text"""
+        pass
+
+    @abstractmethod
+    def fetch_vacancies_portion(self, page_num):
+        """Get one job page by number."""
         pass
 
 
@@ -341,7 +347,7 @@ class MonsterParser(BaseHTMLParser):
         self.pattern_for_skills = r'(?![a-z])(?![A-Z])[\.?\-?\s?\/?\,?\(?\)?]'
 
     def parse_categories(self):
-        soup = parse_url(self.url)
+        soup = self.parse_url(self.url)
         block_with_links = soup.findAll('ul', class_='card-columns')
         block_with_links = block_with_links[0]
         links = block_with_links.findAll('a')
@@ -351,18 +357,14 @@ class MonsterParser(BaseHTMLParser):
             if re.search(self.pattern_for_categories, link):
                 self.categories.append(link)
 
-        self.parse_vacs_of_current_category()
-
-    def parse_vacs_of_current_category(self):
+    def parse_vacs_of_current_category(self, params):
         for category in self.categories:
-            soup = parse_url(category)
+            soup = self.parse_url(category, params)
             vac = soup.findAll(text=re.compile(self.pattern_for_vacs))
             vac = vac[0]
 
             for v in re.findall(self.pattern_for_vacs + r'.+', vac):
                 self.vacs.append(v[:-3])
-
-        self.parse_text_of_current_vac()
 
     def parse_text_of_current_vac(self):
         pattern_for_title = r'\"title\":(\"[^\"]+\")'
@@ -371,33 +373,45 @@ class MonsterParser(BaseHTMLParser):
         pattern_for_cleaning_desc = r'(<br>|<(\/?)div>|<(\/?)h4>|<!--(START|END)_SECTION_[0-9]-->|<(\/?p>)|<(\/?)b>)'
 
         for v in self.vacs:
-            soup = parse_url(v)
+            soup = self.parse_url(v)
             text = soup.findAll('script', type='application/ld+json')
-
-            key_skills = Extractor.extract_skills(str(text))
+            text = str(text)
 
             _id = soup.findAll('div', id='trackingIdentification')
             for i in _id:
                 _id = i.get('data-job-id')
 
-            name = re.search(pattern_for_title, str(text))
-            name = name.group(1)[1:-1]
-            description = re.search(pattern_for_desc, str(text))
-            description = description.group(1)[1:-1]
-            description = re.sub(pattern_for_cleaning_desc, '', description)
-            pub_date = re.search(pattern_for_pub_date, str(text))
-            pub_date = pub_date.group(1)[1:-1]
+            if not bool(self.db.get_docs(DEF_COL, {'_id': _id}, 1)):
+                key_skills = self.extractor.strip_html_tags(text)
+                key_skills = self.extractor.extract_skills(key_skills)
 
-            document = {
-                '_id': _id,
-                'name': name,
-                'description': description,
-                'pub_date': pub_date,
-                'url': v,
-                'key_skills': key_skills,
-            }
+                name = re.search(pattern_for_title, text)
+                name = name.group(1)[1:-1]
+                description = re.search(pattern_for_desc, text)
+                description = description.group(1)[1:-1]
+                description = re.sub(pattern_for_cleaning_desc, '', description)
+                pub_date = re.search(pattern_for_pub_date, text)
+                pub_date = pub_date.group(1)[1:-1]
 
-            self.db.add_doc(DEF_COL, document)
+                document = {
+                    '_id': _id,
+                    'name': name,
+                    'description': description,
+                    'pub_date': pub_date,
+                    'url': v,
+                    'key_skills': key_skills,
+                }
+
+                self.db.add_doc(DEF_COL, document)
+
+    def fetch_vacancies_portion(self, page_num):
+        params = {
+            'stpage': '1',
+            'page': str(page_num)
+        }
+        self.parse_categories()
+        self.parse_vacs_of_current_category(params)
+        self.parse_text_of_current_vac()
 
 
 class ParserFabric:
@@ -429,10 +443,10 @@ class ParserFabric:
 
 # # ----- FOR TEST USE ONLY! -----
 # if __name__ == '__main__':
-#     f = ParserFabric()
+    # f = ParserFabric()
     # print(f.spawn('hh').fetch_vacancies_portion(1))
     # print(f.spawn('aj').fetch_vacancies_portion(1))
     # print(f.spawn('gh').fetch_vacancies_portion(2))
     # print(f.spawn('ms').fetch_vacancies_portion(4))
-    # print(f.spawn('mr')).parse_categories()
+    # print(f.spawn('mr').fetch_vacancies_portion(2))
 # # ----- FOR TEST USE ONLY! -----
