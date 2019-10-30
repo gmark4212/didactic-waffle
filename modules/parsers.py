@@ -1,9 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import requests
 from abc import ABC, abstractmethod
 from functools import reduce
 import operator
+import requests
 from modules.settings import *
 from modules.storage import DataStorage
 from modules.extractor import Extractor
@@ -76,6 +76,7 @@ class BaseParser(ABC):
             ids: tuple
                 кортеж идентификаторов вакансий, которые нужно получить
         """
+
         vacs = []
         if ids:
             for vac_id in ids:
@@ -93,6 +94,7 @@ class BaseParser(ABC):
             data_map: tuple
                 path to vacancies list inside JSON
         """
+
         vacs = []
         response = requests.get(self.api_root, params=params, headers=self.headers)
         data = response.json()
@@ -109,6 +111,7 @@ class BaseParser(ABC):
             vacs: tuple
                 vacancies returned by API
         """
+
         if vacs:
             fields = self.fields
             for vacancy in vacs:

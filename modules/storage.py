@@ -2,13 +2,20 @@
 # -*- coding: utf-8 -*-
 import re
 from builtins import print
-from pymongo import MongoClient
 from collections.abc import Iterable, Iterator
+from pymongo import MongoClient
 from typing import Any, List
 from modules.settings import *
 
 
 class DataStorage:
+    """Class for storing and processing data in a non-relational database.
+
+    Attributes:
+        client: pointer to client-side representation of a MongoDB cluster
+        db: database connection
+        docs_map: memory cache to speed up data acquisition
+    """
 
     def __init__(self):
         try:
@@ -19,6 +26,21 @@ class DataStorage:
         self.docs_map = {}
 
     def get_docs(self, collection_name=None, _filter={}, limit=None, _sort_field='_id'):
+        """Retrieves documents from a specific collection. Supports filtering and limiting.
+        Parameters:
+            collection_name: str
+                the name of the collection in the database
+            _filter: dict
+                filtration conditions
+                https://docs.mongodb.com/manual/reference/operator/aggregation/filter/
+            limit: int
+                limit the number of documents returned
+                https://docs.mongodb.com/manual/reference/operator/aggregation/limit/
+            _sort_field: str
+                sort field
+                https://docs.mongodb.com/manual/reference/operator/aggregation/sort/
+        """
+
         if self.__is_valid(collection_name):
             if limit:
                 return [i for i in self.db[collection_name].find(_filter).limit(limit).sort(_sort_field)]
@@ -26,6 +48,9 @@ class DataStorage:
                 return [i for i in self.db[collection_name].find(_filter).sort(_sort_field)]
 
     def get_doc_by_id(self, collection_name=None, key=None):
+        """Finds the document in the collection by id.
+        If the document is in the cache it returns from the cache"""
+
         if key:
             return self.docs_map.get(
                 self.docs_map[key],
@@ -33,6 +58,8 @@ class DataStorage:
             )
 
     def add_doc(self, collection_name=None, data=None):
+        """Adds the document to collection (with caching)"""
+
         if self.__is_valid(collection_name) and isinstance(data, dict):
             if '_id' in data and data['_id'] not in self.docs_map.keys():
                 self.docs_map[data['_id']] = data
@@ -40,16 +67,22 @@ class DataStorage:
             self.db[collection_name].insert_one(data)
 
     def delete_docs(self, _filter=None, collection_name=None):
+        """Deletes documents from the collection according to the specified filter"""
+
         if _filter and isinstance(_filter, dict) and collection_name:
             self.db[collection_name].delete_many(_filter)
 
     def update_doc(self, collection_name=None, _filter=None, set_dict=None):
+        """Updates documents found by the filter with the specified data."""
+
         if self.__is_valid(collection_name) \
                 and _filter and isinstance(_filter, dict) \
                 and set_dict and isinstance(set_dict, dict):
             self.db[collection_name].update_one(_filter, {"$set": set_dict}, upsert=False)
 
     def __is_valid(self, collection_name):
+        """Checks for a collection in the database."""
+
         return bool(collection_name) and hasattr(self.db, collection_name)
 
     def add_skill_to_ref(self, skills):
