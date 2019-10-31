@@ -14,7 +14,7 @@ class DataStorage:
     Attributes:
         client: pointer to client-side representation of a MongoDB cluster
         db: database connection
-        docs_map: memory cache to speed up data acquisition
+        docs_cache: memory cache to speed up data acquisition
     """
 
     def __init__(self):
@@ -23,7 +23,7 @@ class DataStorage:
             self.db = self.client[MONGO_DB_NAME]
         except Exception as e:
             print(f'ERROR: {str(e)}')
-        self.docs_map = {}
+        self.docs_cache = {}
 
     def get_docs(self, collection_name=None, _filter={}, limit=None, _sort_field='_id'):
         """Retrieves documents from a specific collection. Supports filtering and limiting.
@@ -39,6 +39,8 @@ class DataStorage:
             _sort_field: str
                 sort field
                 https://docs.mongodb.com/manual/reference/operator/aggregation/sort/
+
+        Returns: list
         """
 
         if self.__is_valid(collection_name):
@@ -52,8 +54,8 @@ class DataStorage:
         If the document is in the cache it returns from the cache"""
 
         if key:
-            return self.docs_map.get(
-                self.docs_map[key],
+            return self.docs_cache.get(
+                self.docs_cache[key],
                 self.db.get_docs(collection_name, {'_id': key}, 1)
             )
 
@@ -61,8 +63,8 @@ class DataStorage:
         """Adds the document to collection (with caching)"""
 
         if self.__is_valid(collection_name) and isinstance(data, dict):
-            if '_id' in data and data['_id'] not in self.docs_map.keys():
-                self.docs_map[data['_id']] = data
+            if '_id' in data and data['_id'] not in self.docs_cache.keys():
+                self.docs_cache[data['_id']] = data
             print('+', data)
             self.db[collection_name].insert_one(data)
 
@@ -86,6 +88,12 @@ class DataStorage:
         return bool(collection_name) and hasattr(self.db, collection_name)
 
     def add_skill_to_ref(self, skills):
+        """Adds skills to the database.
+        Parameters:
+            skills: list, dict, str
+                collection with skills
+        """
+
         if isinstance(skills, str):
             x = list()
             x.append(skills)
@@ -112,14 +120,29 @@ class DataStorage:
                     self.add_doc(SKILLS_REF, {'name': skill, 'low': lower_cased_skill})
 
     def get_key_skills_ref(self):
+        """Returns collection of unique skills from DB.
+
+            Returns: tuple
+        """
+
         ref = self.get_docs(SKILLS_REF)
         return tuple(x['name'] for x in ref)
 
     def get_paid_vacancies(self):
+        """Returns list of 100 vacancies with top salary in desc order.
+
+            Returns: list
+        """
+
         return self.get_docs(DEF_COL, _filter={'salary.from': {'$gt': 0}}, limit=100, _sort_field='salary.from')
 
     @staticmethod
     def __create_search_pattern(search_str):
+        """Returns pattern for job position matching.
+
+            Returns: str
+        """
+
         keywords = set(search_str.split())
         if len(keywords) > 1:
             pattern = '^'.join(r'(?=.*\b' + re.escape(x) + r'\b)' for x in keywords) + r'.*$'
@@ -128,6 +151,11 @@ class DataStorage:
         return pattern
 
     def fetch_top_skills(self, search_str, vacs_limit=0, no_vacs=False):
+        """Returns top of skills with vacancies.
+
+            Returns: dict
+        """
+
         pipeline = [
             {"$match": {"name": {"$regex": self.__create_search_pattern(search_str), "$options": "gi"}}},
             {"$unwind": "$key_skills"},
@@ -155,6 +183,11 @@ class DataStorage:
         return top
 
     def get_vacancies_by_skill(self, skill, search_str='', limit=0):
+        """Returns list of vacancies for specified skill.
+
+            Returns: list
+        """
+
         pipeline = []
 
         if search_str:
@@ -180,10 +213,24 @@ class DataStorage:
         return [dict(t) for t in {tuple(d.items()) for d in vacs}]
 
     def get_skills_ref(self):
+        """Returns skills reference.
+
+            Returns: list of dicts
+        """
+
         skills = list(self.get_docs(SKILLS_REF))
         return [{'name': x['name'], '_id': str(x['_id'])} for x in skills]
 
     def get_skill_details(self, top_skills):
+        """Enriches skills top dictionary with ads details and descriptions from stackshare.io.
+
+        Parameters:
+            top_skills: dict
+                top skills collected
+
+        Returns: dict
+        """
+
         for i in top_skills['data']:
             i['ads'] = self.get_ads_by_skill(i['_id'])
             s = self.get_docs(SKILLS_REF, _filter={'low': i['_id'].lower()}, limit=1)
@@ -196,6 +243,15 @@ class DataStorage:
                     i['site'] = s['site']
 
     def get_ads_by_skill(self, skill=None, limit=0):
+        """Returns list of advertise campaigns for specified skill.
+
+        Parameters:
+            skill: str
+            limit: int
+
+        Returns: list
+        """
+
         if skill:
             pipeline = [
                 {"$match": {"paid": True}},
@@ -217,6 +273,8 @@ class DataStorage:
 
 
 class SalaryVacancyIterator(Iterator):
+    """Iterator for vacancies salary (not used now)."""
+
     _position: int = None
     _reverse: bool = False
 
@@ -236,6 +294,8 @@ class SalaryVacancyIterator(Iterator):
 
 
 class VacanciesCollection(Iterable):
+    """VacanciesCollection (not used now)."""
+
     def __init__(self, coll: List[Any] = []):
         self._collection = coll
 
