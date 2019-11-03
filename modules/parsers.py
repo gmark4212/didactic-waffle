@@ -4,13 +4,22 @@ import requests
 from abc import ABC, abstractmethod
 from functools import reduce
 import operator
-from modules.settings import *
-from modules.storage import DataStorage
-from modules.extractor import Extractor
+from settings import *
+from storage import DataStorage
+from extractor import Extractor
 
 from user_agent import generate_user_agent
+from torrequest import TorRequest
 from bs4 import BeautifulSoup
+from time import sleep
+from random import uniform
 import re
+import sys
+
+
+class AccessDenied(BaseException):
+    """Class for custom error 403 forbidden"""
+    pass
 
 
 class BaseParser(ABC):
@@ -35,6 +44,10 @@ class BaseParser(ABC):
             pointer to an instance of the class responsible for extracting data from text
         headers: dict
             default http header data
+        tr: TorRequest-object
+            insert your un-hashed password from torrc into the password parameter
+        is_blocked: bool
+            True - use tor; False - don't use tor. Default False. Do not set this variable
         """
 
         self.api_root = None
@@ -44,6 +57,8 @@ class BaseParser(ABC):
         self.headers = {
             'User-Agent': generate_user_agent()
         }
+        self.tr = TorRequest(password='as.rd.es.13')
+        self.is_blocked = False
 
     @abstractmethod
     def fetch_vacancies_portion(self, page_num):
@@ -57,6 +72,31 @@ class BaseParser(ABC):
 
         return reduce(operator.getitem, map_tuple, data_dict)
 
+    def send_request(self, url, params=None, is_blocked=False):
+        """Returns response or exception AccessDenied.
+        Attributes:
+            url: str; api_root
+                stores initial API url
+            params: dict
+                GET request parameter dictionary
+            is_blocked: bool; self.is_blocked
+                do not change this
+        """
+        if not is_blocked:
+            r = requests.get(url, params=params, headers=self.headers)
+        else:
+            self.tr.reset_identity()
+            sleep(uniform(0, 2.5))
+            r = self.tr.get(url, params=params, headers=self.headers)
+
+        if r.status_code == 403:
+            if is_blocked:
+                # if a 403 error is received when using tor, then an error on the site
+                raise AccessDenied
+            return self.send_request(url, params=params, is_blocked=True)
+
+        return r, is_blocked
+
     def get_ids(self, params, ids_root, str_get_params=''):
         """Returns a tuple of unique vacancy identifiers.
         Parameters:
@@ -69,10 +109,13 @@ class BaseParser(ABC):
         """
 
         ids = ()
-        response = requests.get(url=self.api_root + str_get_params, params=params, headers=self.headers)
-        if response.status_code == 200:
-            ids = tuple(x['id'] for x in response.json()[ids_root])
-        return ids
+        try:
+            response, self.is_blocked = self.send_request(url=self.api_root + str_get_params, params=params, is_blocked=self.is_blocked)
+            if response.status_code == 200:
+                ids = tuple(x['id'] for x in response.json()[ids_root])
+            return ids
+        except AccessDenied:
+            pass
 
     def get_vacs_by_ids(self, ids=None):
         """Returns tuple of vacancies with specified identifiers.
@@ -83,10 +126,14 @@ class BaseParser(ABC):
         vacs = []
         if ids:
             for vac_id in ids:
-                response = requests.get(f'{self.api_root}/{vac_id}', headers=self.headers)
-                if response.status_code == 200:
-                    vacancy = response.json()
-                    vacs.append(vacancy)
+                try:
+                    response, self.is_blocked = self.send_request(f'{self.api_root}/{vac_id}', is_blocked=self.is_blocked)
+                    if response.status_code == 200:
+                        vacancy = response.json()
+                        vacs.append(vacancy)
+                except AccessDenied:
+                    pass
+
         return tuple(vacs)
 
     def get_vacs_by_root(self, params, data_map=None):
@@ -98,14 +145,17 @@ class BaseParser(ABC):
                 path to vacancies list inside JSON
         """
         vacs = []
-        response = requests.get(self.api_root, params=params, headers=self.headers)
-        data = response.json()
-        if isinstance(data_map, tuple):
-            data = self.get_field_from_nested_dict(data, data_map)
-        if data:
-            for vacancy in data:
-                vacs.append(vacancy)
-        return tuple(vacs)
+        try:
+            response, self.is_blocked = self.send_request(self.api_root, params=params, is_blocked=self.is_blocked)
+            data = response.json()
+            if isinstance(data_map, tuple):
+                data = self.get_field_from_nested_dict(data, data_map)
+            if data:
+                for vacancy in data:
+                    vacs.append(vacancy)
+            return tuple(vacs)
+        except AccessDenied:
+            pass
 
     def process_vacancies(self, vacs):
         """Processes tuple with vacancies objects.
@@ -168,6 +218,10 @@ class BaseHTMLParser(ABC):
                 pointer to an instance of the class responsible for extracting data from text
             headers: dict
                 default http header data
+            tr: TorRequest-object
+                insert your un-hashed password from torrc into the password parameter
+            is_blocked: bool
+                True - use tor; False - don't use tor. Default False. Do not set this variable
         """
         self.url = None
         self.db = DataStorage()
@@ -175,13 +229,35 @@ class BaseHTMLParser(ABC):
         self.headers = {
             'User-Agent': generate_user_agent()
         }
+        self.tr = TorRequest(password='as.rd.es.13')
+        self.is_blocked = False
 
-    def parse_url(self, url, params=None):
-        """Returns soup-object for concrete url"""
-        r = requests.get(url, params=params, headers=self.headers)
-        soup = BeautifulSoup(r.text, 'html.parser')
+    def parse_url(self, url, params=None, is_blocked=False):
+        """Returns soup-object for specific url or exception AccessDenied.
+        Attributes:
+            url: str
+                initial url
+            params: dict
+                GET request parameter dictionary
+            is_blocked: bool; self.is_blocked
+                do not change this
+        """
+        if not is_blocked:
+            r = requests.get(url, params=params, headers=self.headers)
+        else:
+            self.tr.reset_identity()
+            sleep(uniform(0, 2.5))
+            r = self.tr.get(url, params=params, headers=self.headers)
 
-        return soup
+        if r.status_code == 403:
+            if is_blocked:
+                # if a 403 error is received when using tor, then an error on the site
+                raise AccessDenied
+            return self.parse_url(url, params=params, is_blocked=True)
+        elif r.status_code == 200:
+            return BeautifulSoup(r.text, 'html.parser'), is_blocked
+        else:
+            return None
 
     @abstractmethod
     def parse_categories(self):
@@ -331,9 +407,9 @@ class MonsterParser(BaseHTMLParser):
     def __init__(self):
         """
         Attributes:
-            self.categories: list
+            categories: list
                 list of links to category pages
-            self.vacs: list
+            vacs: list
                 list of links to vacancy pages
         """
         super().__init__()
@@ -344,65 +420,74 @@ class MonsterParser(BaseHTMLParser):
 
         self.pattern_for_categories = r'https:\/\/www\.monster\.com\/jobs\/q.+'
         self.pattern_for_vacs = r'https:\/\/job-openings\.monster\.com\/'
-        self.pattern_for_skills = r'(?![a-z])(?![A-Z])[\.?\-?\s?\/?\,?\(?\)?]'
 
     def parse_categories(self):
-        soup = self.parse_url(self.url)
-        block_with_links = soup.findAll('ul', class_='card-columns')
-        block_with_links = block_with_links[0]
-        links = block_with_links.findAll('a')
+        try:
+            soup, self.is_blocked = self.parse_url(self.url, is_blocked=self.is_blocked)
+            if soup is not None:
+                block_with_links = soup.findAll('ul', class_='card-columns')
+                block_with_links = block_with_links[0]
+                links = block_with_links.findAll('a')
 
-        for link in links:
-            link = link.get('href')
-            if re.search(self.pattern_for_categories, link):
-                self.categories.append(link)
+                for link in links:
+                    link = link.get('href')
+                    if re.search(self.pattern_for_categories, link):
+                        self.categories.append(link)
+        except AccessDenied:
+            return None
 
     def parse_vacs_of_current_category(self, params):
         for category in self.categories:
-            soup = self.parse_url(category, params)
-            vac = soup.findAll(text=re.compile(self.pattern_for_vacs))
-            vac = vac[0]
+            try:
+                soup, self.is_blocked = self.parse_url(category, params, is_blocked=self.is_blocked)
+                if soup is not None:
+                    vac = soup.findAll(text=re.compile(self.pattern_for_vacs))
+                    vac = vac[0]
 
-            for v in re.findall(self.pattern_for_vacs + r'.+', vac):
-                self.vacs.append(v[:-3])
+                    for v in re.findall(self.pattern_for_vacs + r'.+', vac):
+                        self.vacs.append(v[:-3])
+            except AccessDenied:
+                return None
 
     def parse_text_of_current_vac(self):
-        pattern_for_title = r'\"title\":(\"[^\"]+\")'
-        pattern_for_pub_date = r'\"datePosted\":(\"[^\"]+\")'
-        pattern_for_desc = r'\"description\":(\"[^\"]+\")'
-        pattern_for_cleaning_desc = r'(<br>|<(\/?)div>|<(\/?)h4>|<!--(START|END)_SECTION_[0-9]-->|<(\/?p>)|<(\/?)b>)'
+        default_pattern = r'(\"[^\"]+\")'
+        pattern_for_cleaning_desc = r'<!--(START|END)_SECTION_[0-9]-->'
 
         for v in self.vacs:
-            soup = self.parse_url(v)
-            text = soup.findAll('script', type='application/ld+json')
-            text = str(text)
+            try:
+                soup, self.is_blocked = self.parse_url(v, is_blocked=self.is_blocked)
+                if soup is not None:
+                    text = soup.findAll('script', type='application/ld+json')
+                    text = self.extractor.strip_html_tags(str(text))
 
-            _id = soup.findAll('div', id='trackingIdentification')
-            for i in _id:
-                _id = i.get('data-job-id')
+                    _id = soup.findAll('div', id='trackingIdentification')
+                    for i in _id:
+                        _id = i.get('data-job-id')
+                    _id = self.__class__.id + str(_id)
 
-            if not bool(self.db.get_docs(DEF_COL, {'_id': _id}, 1)):
-                key_skills = self.extractor.strip_html_tags(text)
-                key_skills = self.extractor.extract_skills(key_skills)
+                    if not bool(self.db.get_docs(DEF_COL, {'_id': _id}, 1)):
+                        key_skills = self.extractor.extract_skills(text)
 
-                name = re.search(pattern_for_title, text)
-                name = name.group(1)[1:-1]
-                description = re.search(pattern_for_desc, text)
-                description = description.group(1)[1:-1]
-                description = re.sub(pattern_for_cleaning_desc, '', description)
-                pub_date = re.search(pattern_for_pub_date, text)
-                pub_date = pub_date.group(1)[1:-1]
+                        name = re.search(r'\"title\":'+default_pattern, text)
+                        name = name.group(1)[1:-1]
+                        description = re.search(r'\"description\":'+default_pattern, text)
+                        description = description.group(1)[1:-1]
+                        description = re.sub(pattern_for_cleaning_desc, '', description)
+                        pub_date = re.search(r'\"datePosted\":'+default_pattern, text)
+                        pub_date = pub_date.group(1)[1:-1]
 
-                document = {
-                    '_id': _id,
-                    'name': name,
-                    'description': description,
-                    'pub_date': pub_date,
-                    'url': v,
-                    'key_skills': key_skills,
-                }
+                        document = {
+                            '_id': _id,
+                            'name': name,
+                            'description': description,
+                            'pub_date': pub_date,
+                            'url': v,
+                            'key_skills': key_skills,
+                        }
 
-                self.db.add_doc(DEF_COL, document)
+                        self.db.add_doc(DEF_COL, document)
+            except AccessDenied:
+                return None
 
     def fetch_vacancies_portion(self, page_num):
         params = {
