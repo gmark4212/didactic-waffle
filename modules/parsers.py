@@ -7,6 +7,7 @@ import operator
 from settings import *
 from storage import DataStorage
 from extractor import Extractor
+from getcountry import GetCountry
 
 from user_agent import generate_user_agent
 from torrequest import TorRequest
@@ -63,6 +64,12 @@ class BaseParser(ABC):
     @abstractmethod
     def fetch_vacancies_portion(self, page_num):
         """Get one job page from API by number."""
+
+        pass
+
+    @abstractmethod
+    def get_user_country(self, data_dict):
+        """Get country from API."""
 
         pass
 
@@ -186,6 +193,8 @@ class BaseParser(ABC):
                         else:
                             vacancy_url = vacancy[url_map]
 
+                        country = self.get_user_country(vacancy)
+
                         document = {
                             '_id': _id,
                             'name': vacancy[fields['name']],
@@ -193,6 +202,7 @@ class BaseParser(ABC):
                             'pub_date': vacancy[fields['pub_date']],
                             'url': vacancy_url,
                             'key_skills': extracted_skills,
+                            'country': country
                         }
 
                         self.db.add_doc(DEF_COL, document)
@@ -281,7 +291,7 @@ class BaseHTMLParser(ABC):
 
 
 class HhParser(BaseParser):
-    """ Hh.ru API-parser implementation.
+    """Hh.ru API-parser implementation.
 
     Inherits the base class BaseParser"""
 
@@ -301,6 +311,9 @@ class HhParser(BaseParser):
             'url': 'alternate_url',
             'skills': 'key_skills',
         }
+
+    def get_user_country(self, data_dict):
+        return 'RU'
 
     def fetch_vacancies_portion(self, page_num):
         params = {
@@ -331,6 +344,16 @@ class GitHubParser(BaseParser):
             'url': 'url',
         }
 
+    def get_user_country(self, data_dict):
+        try:
+            country = operator.getitem(data_dict, 'location').split()[-1]
+            print(country)
+            country = GetCountry.get_iso_code(country)
+        except Exception:
+            country = None
+
+        return country
+
     def fetch_vacancies_portion(self, page_num):
         params = {
             'page': page_num,
@@ -356,6 +379,17 @@ class AuthenticJobsParser(BaseParser):
             'pub_date': 'post_date',
             'url': 'url',
         }
+
+    def get_user_country(self, data_dict):
+        try:
+            company_dict = operator.getitem(data_dict, 'company')
+            location_dict = company_dict['location']
+            country = location_dict['name'].split()[-1]
+            country = GetCountry.get_iso_code(country)
+        except Exception:
+            country = None
+
+        return country
 
     def fetch_vacancies_portion(self, page_num):
         params = {
@@ -384,8 +418,18 @@ class TheMuseParser(BaseParser):
             'desc': 'contents',
             'name': 'name',
             'pub_date': 'publication_date',
-            'url': ('refs', 'landing_page'),
+            'url': ('refs', 'landing_page')
         }
+
+    def get_user_country(self, data_dict):
+        try:
+            get_location_dict = operator.getitem(data_dict, 'locations')
+            get_location_dict = get_location_dict[0]['name'].split()[-1]
+            country = GetCountry.get_iso_code(get_location_dict)
+        except Exception:
+            country = None
+
+        return country
 
     def fetch_vacancies_portion(self, page_num):
         params = {
@@ -475,6 +519,9 @@ class MonsterParser(BaseHTMLParser):
                         description = re.sub(pattern_for_cleaning_desc, '', description)
                         pub_date = re.search(r'\"datePosted\":'+default_pattern, text)
                         pub_date = pub_date.group(1)[1:-1]
+                        country = re.search(r'\"addressCountry\":'+default_pattern, text)
+                        country = country.group(1)[1:-1]
+                        country = GetCountry.get_iso_code(country)
 
                         document = {
                             '_id': _id,
@@ -483,6 +530,7 @@ class MonsterParser(BaseHTMLParser):
                             'pub_date': pub_date,
                             'url': v,
                             'key_skills': key_skills,
+                            'country': country
                         }
 
                         self.db.add_doc(DEF_COL, document)

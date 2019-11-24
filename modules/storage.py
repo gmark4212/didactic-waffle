@@ -6,6 +6,7 @@ from collections.abc import Iterable, Iterator
 from pymongo import MongoClient
 from typing import Any, List
 from settings import *
+from getcountry import GetCountry
 
 
 class DataStorage:
@@ -127,7 +128,7 @@ class DataStorage:
             pattern = r'\b' + re.escape(list(keywords)[0]) + r'\b'
         return pattern
 
-    def fetch_top_skills(self, search_str, vacs_limit=0, no_vacs=False, is_russia=True):
+    def fetch_top_skills(self, search_str, vacs_limit=0, no_vacs=False):
         pipeline = [
             {"$match": {"name": {"$regex": self.__create_search_pattern(search_str), "$options": "gi"}}},
             {"$unwind": "$key_skills"},
@@ -149,13 +150,14 @@ class DataStorage:
 
         if not no_vacs:
             for i in top['data']:
-                i['vacs'] = self.get_vacancies_by_skill(i['_id'], search_str, vacs_limit, is_russia=is_russia)
+                i['vacs'] = self.get_vacancies_by_skill(i['_id'], search_str, vacs_limit)
                 i['visible'] = False
 
         return top
 
-    def get_vacancies_by_skill(self, skill, search_str='', limit=0, is_russia=True):
+    def get_vacancies_by_skill(self, skill, search_str='', limit=0):
         pipeline = []
+        iso_country_code = GetCountry().get_country_from_db()
 
         if search_str:
             pipeline.append(
@@ -168,8 +170,8 @@ class DataStorage:
             {"$sort": {"pub_date": -1}}
         ])
 
-        if not is_russia:
-            pipeline[2]["$match"]["_id"] = {"$regex": r"^(?!hh).+", "$options": "gi"}
+        if iso_country_code != 'RU':
+            pipeline[2]["$match"]["country"] = {"$ne": "RU"}
 
         if limit > 0:
             pipeline.append(

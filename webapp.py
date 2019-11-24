@@ -12,7 +12,6 @@ from modules._sensitive import SECRET, EMAIL_CONFIRM_SALT, MAIL_PASSWORD
 from modules.storage import DataStorage
 from modules.auth import User
 from modules.payment import StripePay
-from geoip2.database import Reader
 
 
 class CustomFlask(Flask):
@@ -64,21 +63,6 @@ def get_confirmation_token(email):
     return serializer.dumps(email, EMAIL_CONFIRM_SALT)
 
 
-def get_country_by_ip():
-    """Returns True if the user is from Russia"""
-    ip = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
-    reader = Reader('GeoLite2-Country.mmdb')
-    try:
-        c = reader.country(ip)
-        c = c.country.iso_code
-        if c != 'RU':
-            return False
-        else:
-            return True
-    except Exception:
-        return False
-
-
 @login_manager.user_loader
 def load_user(email):
     db_user = get_user(filter_dict={'email': email})
@@ -94,10 +78,9 @@ def index():
 
 @app.route('/api/v1/skills/', methods=['GET'])
 def api_get_top_skills_with_vacs():
-    is_russia = get_country_by_ip()
     search = escape(request.args.get('search'))
     if bool(search) and len(search) > 2:
-        top = db.fetch_top_skills(search, VACS_LIMIT, is_russia=is_russia)
+        top = db.fetch_top_skills(search, VACS_LIMIT)
         db.get_skill_details(top)
         return jsonify({'data': top})
     else:
