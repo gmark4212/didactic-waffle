@@ -11,9 +11,8 @@ class GetCountry:
         ip: user IP
     """
     def __init__(self):
-        # self.ip = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
+        self.ip = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
         self.reader = Reader('GeoLite2-Country.mmdb')
-        self.ip = '94.19.26.47'
 
     def get_country_from_db(self):
         """Returns the country from GeoLite2-Country.mmdb"""
